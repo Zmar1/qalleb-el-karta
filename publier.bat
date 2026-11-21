@@ -31,7 +31,16 @@ git branch -M main
 echo.
 echo Envoi vers GitHub (une fenetre de connexion peut s'ouvrir la premiere fois)...
 git push -u origin main
+if not errorlevel 1 goto pushok
+
+echo.
+echo GitHub contient des changements absents d'ici : recuperation puis nouvel envoi...
+git pull --no-rebase --allow-unrelated-histories --no-edit origin main
 if errorlevel 1 goto pusherr
+git push -u origin main
+if errorlevel 1 goto pusherr
+
+:pushok
 
 echo.
 echo ==========================================================
