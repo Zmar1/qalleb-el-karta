@@ -1,0 +1,17 @@
+{
+  "name": "قلّب الكارطة",
+  "short_name": "قلّب الكارطة",
+  "description": "لعبة أسئلة تونسية: وحدك، واحد ضدّ واحد، ولا للمحبّين.",
+  "lang": "ar-TN",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6EFE3",
+  "theme_color": "#0E5AA7",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
+

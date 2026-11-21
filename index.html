@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar-TN" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0E5AA7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="قلّب الكارطة: لعبة أسئلة تونسية، وحدك، واحد ضدّ واحد، ولا للمحبّين.">
+  <title>قلّب الكارطة 🇹🇳</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Reem+Kufi:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="bg-blobs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <!-- ================= Accueil : choix du thème ================= -->
+  <section id="screen-home" class="screen active">
+    <div class="home">
+      <button type="button" class="icon-btn sound-toggle home-sound" aria-label="قصّ الصوت">🔊</button>
+      <header class="home-head">
+        <img class="logo-img" src="icon.svg" alt="" width="96" height="96">
+        <h1>قلّب <span class="accent">الكارطة</span></h1>
+        <p class="tagline"><img src="img/flag-tn.svg" alt="" width="18" height="18"> لعبة أسئلة 100% تونسية</p>
+        <p class="subtitle">إختار موضوع و هيّا نلعبو!</p>
+      </header>
+      <div class="frieze" aria-hidden="true"></div>
+      <div id="topic-grid" class="topic-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= Configuration : mode + joueurs ================= -->
+  <section id="screen-setup" class="screen">
+    <div class="panel" id="setup-panel">
+      <button type="button" id="setup-back" class="back-btn">→ المواضيع</button>
+
+      <div class="topic-hero">
+        <div id="setup-medal" class="hero-medal" aria-hidden="true"></div>
+        <h1 id="setup-name"></h1>
+        <p id="setup-desc" class="subtitle"></p>
+      </div>
+
+      <div id="mode-switch" class="mode-switch" role="group" aria-label="طريقة اللعب">
+        <button type="button" data-mode="solo"><span aria-hidden="true">👤</span>وحدي</button>
+        <button type="button" data-mode="duel"><span aria-hidden="true">⚔️</span>واحد ضدّ واحد</button>
+      </div>
+      <p id="mode-desc" class="mode-desc"></p>
+
+      <form id="setup-form" autocomplete="off">
+        <label class="field p1">
+          <span class="dot"></span>
+          <input id="name-p1" maxlength="14" aria-label="إسم اللاعب الأوّل">
+          <span class="seat">⬇️ لوطا</span>
+        </label>
+        <label class="field p2" id="field-p2">
+          <span class="dot"></span>
+          <input id="name-p2" maxlength="14" aria-label="إسم اللاعب الثاني">
+          <span class="seat">⬆️ الفوق</span>
+        </label>
+
+        <label class="select-field" id="timer-field">
+          <span>⏱️ الوقت متاع كل سؤال</span>
+          <select id="timer-select">
+            <option value="0">بلا وقت</option>
+            <option value="20">20 ثانية</option>
+            <option value="30" selected>30 ثانية</option>
+            <option value="45">45 ثانية</option>
+          </select>
+        </label>
+
+        <button type="submit" id="start-btn" class="btn primary"></button>
+      </form>
+
+      <p id="setup-tip" class="tip">📱 حطّو التليفون على الطاولة بيناتكم، وجه لوجه.<br>و ما تنساوش <strong>تقفّلو دوران الشاشة</strong>.</p>
+    </div>
+  </section>
+
+  <!-- ================= Mode 1 contre 1 : écran partagé ================= -->
+  <section id="screen-duel" class="screen">
+    <div id="zone-p2" class="zone p2 zone-top"></div>
+
+    <div class="divider">
+      <button type="button" class="icon-btn sound-toggle" aria-label="قصّ الصوت">🔊</button>
+      <div class="timer-track" id="duel-timer-track"><i id="duel-timer-bar"></i></div>
+      <button type="button" id="duel-quit" class="icon-btn" aria-label="اخرج">✕</button>
+    </div>
+
+    <div id="zone-p1" class="zone p1 zone-bottom"></div>
+  </section>
+
+  <template id="zone-tpl">
+    <header class="zone-head">
+      <div class="who"><span class="name"></span><span class="role"></span></div>
+      <div class="scores"><span class="score-me">0</span><span class="score-opp"></span></div>
+    </header>
+
+    <div class="zone-body">
+      <div class="view view-board"></div>
+
+      <div class="view view-wait">
+        <div class="wait-card" aria-hidden="true"></div>
+        <p class="wait-text"></p>
+        <p class="wait-sub">📢 حضّر روحك باش تقرا السؤال بالصوت العالي</p>
+      </div>
+
+      <div class="view view-ask">
+        <div class="qcard">
+          <div class="card-inner">
+            <div class="face front"><span class="num"></span></div>
+            <div class="face back">
+              <div class="q-head"><span class="chip category"></span><span class="q-timer"></span></div>
+              <p class="hint">📢 اقرا السؤال و الإختيارات بالصوت العالي</p>
+              <h2 class="q-text"></h2>
+              <ol class="choices"></ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="view view-answer">
+        <div class="q-head"><span class="listen"></span><span class="q-timer"></span></div>
+        <div class="answers"></div>
+      </div>
+
+      <div class="view view-end">
+        <div class="end-emoji"></div>
+        <p class="end-title"></p>
+        <p class="end-score"></p>
+        <div class="end-actions">
+          <button type="button" class="btn primary replay">🔁 نعاودو</button>
+          <button type="button" class="btn ghost menu">المواضيع</button>
+        </div>
+      </div>
+
+      <p class="feedback" aria-live="polite"></p>
+      <button type="button" class="btn primary next" hidden>كمّل ←</button>
+    </div>
+  </template>
+
+  <!-- ================= Solo & Amoureux : écran normal ================= -->
+  <section id="screen-single" class="screen">
+    <header class="single-head">
+      <button type="button" id="single-quit" class="icon-btn" aria-label="ارجع">→</button>
+      <div class="single-title">
+        <span id="single-topic"></span>
+        <small id="single-sub"></small>
+      </div>
+      <button type="button" class="icon-btn sound-toggle" aria-label="قصّ الصوت">🔊</button>
+    </header>
+    <div id="single-players" class="single-players"></div>
+    <main id="single-board" class="board board-single" aria-label="الكارطات"></main>
+  </section>
+
+  <div id="modal" class="modal" hidden>
+    <div id="big-card" class="big-card" role="dialog" aria-modal="true" aria-labelledby="m-question">
+      <div class="card-inner">
+        <div class="face front"><span class="num"></span></div>
+        <div class="face back">
+          <div class="q-head"><span id="m-chip" class="chip"></span><span id="m-timer" class="q-timer"></span></div>
+          <div class="timer-track" id="m-timer-track"><i id="m-timer-bar"></i></div>
+          <p id="m-for" class="for-who"></p>
+          <h2 id="m-question" class="q-text"></h2>
+          <div id="m-answers" class="answers"></div>
+          <p id="m-feedback" class="feedback" aria-live="polite"></p>
+          <div id="m-love-actions" class="love-actions" hidden>
+            <button type="button" id="m-heart" class="btn love">💖 جواب يهبّل</button>
+            <button type="button" id="m-skip" class="btn ghost">السؤال الجاي ←</button>
+          </div>
+          <button type="button" id="m-next" class="btn primary" hidden>كمّل ←</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section id="screen-end" class="screen">
+    <div class="panel">
+      <div id="end-emoji" class="hero-emoji bounce" aria-hidden="true"></div>
+      <h1 id="end-title"></h1>
+      <p id="end-sub" class="subtitle"></p>
+      <div id="end-scores" class="end-scores"></div>
+      <button type="button" id="end-replay" class="btn primary">🔁 عاود</button>
+      <button type="button" id="end-menu" class="btn ghost">🏠 بدّل الموضوع</button>
+    </div>
+  </section>
+
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
+  <!-- Textes (derja tunisienne) -->
+  <script src="js/lang.js"></script>
+
+  <!-- Thèmes (ajoute ici tes nouveaux fichiers de thème) -->
+  <script src="js/topics/_registry.js"></script>
+  <script src="js/topics/tunisie.js"></script>
+  <script src="js/topics/culture.js"></script>
+  <script src="js/topics/geographie.js"></script>
+  <script src="js/topics/sciences.js"></script>
+  <script src="js/topics/cinema-musique.js"></script>
+  <script src="js/topics/amoureux.js"></script>
+
+  <!-- Moteur -->
+  <script src="js/sound.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/modes/duel.js"></script>
+  <script src="js/modes/single.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

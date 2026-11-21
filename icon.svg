@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#FBF6EC"/>
+  <!-- bougainvillier -->
+  <path d="M318 150c26-14 52-12 72 4" stroke="#1F8A5B" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <g fill="#D6336C">
+    <circle cx="372" cy="116" r="34"/>
+    <circle cx="414" cy="158" r="26"/>
+    <circle cx="338" cy="84" r="22"/>
+    <circle cx="422" cy="104" r="18"/>
+  </g>
+  <g fill="#F0619A">
+    <circle cx="392" cy="132" r="14"/>
+    <circle cx="356" cy="118" r="10"/>
+  </g>
+  <!-- porte de Sidi Bou Saïd -->
+  <path d="M146 456V246a110 110 0 0 1 220 0v210z" fill="#0E5AA7" stroke="#fff" stroke-width="10"/>
+  <path d="M176 440V250a80 80 0 0 1 160 0v190" fill="none" stroke="#0B2540" stroke-width="10"
+        stroke-linecap="round" stroke-dasharray="0 24"/>
+  <!-- croissant et étoile -->
+  <g transform="translate(256 300) scale(1.75) translate(-50 -50)">
+    <circle cx="50" cy="50" r="30" fill="#fff"/>
+    <circle cx="47" cy="50" r="22.5" fill="#E70013"/>
+    <circle cx="53" cy="50" r="18" fill="#fff"/>
+    <polygon fill="#E70013" points="45.5,50 52.76,47.65 52.76,40.01 57.24,46.2 64.49,43.83 60,50 64.49,56.17 57.24,53.8 52.76,59.99 52.76,52.35"/>
+  </g>
+  <!-- marche -->
+  <rect x="120" y="456" width="272" height="18" rx="9" fill="#F2C14E"/>
+</svg>
+
