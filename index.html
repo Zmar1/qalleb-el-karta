@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0E5AA7">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="description" content="قلّب الكارطة: لعبة أسئلة تونسية، وحدك، واحد ضدّ واحد، ولا للمحبّين.">
+  <meta name="apple-mobile-web-app-title" content="قلّب الكارطة">
+  <meta name="description" content="قلّب الكارطة: لعبة أسئلة 100% تونسية. تحدّي كل نهار، تحدّى صحابك، ألعب وحدك، مع العايلة ولا وجه لوجه. تخدم حتى بلاش إنترنت.">
+  <meta property="og:title" content="قلّب الكارطة 🇹🇳">
+  <meta property="og:description" content="لعبة أسئلة 100% تونسية: تحدّي اليوم، تحدّى صحابك، و ألعب مع العايلة.">
+  <meta property="og:type" content="website">
   <title>قلّب الكارطة 🇹🇳</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -19,16 +24,33 @@
 <body>
   <div class="bg-blobs" aria-hidden="true"><span></span><span></span><span></span></div>
 
-  <!-- ================= Accueil : choix du thème ================= -->
+  <!-- ================= Accueil ================= -->
   <section id="screen-home" class="screen active">
     <div class="home">
+      <button type="button" id="help-btn" class="icon-btn home-help" aria-label="كيفاش نلعبو؟">؟</button>
       <button type="button" class="icon-btn sound-toggle home-sound" aria-label="قصّ الصوت">🔊</button>
       <header class="home-head">
         <img class="logo-img" src="icon.svg" alt="" width="96" height="96">
         <h1>قلّب <span class="accent">الكارطة</span></h1>
         <p class="tagline"><img src="img/flag-tn.svg" alt="" width="18" height="18"> لعبة أسئلة 100% تونسية</p>
-        <p class="subtitle">إختار موضوع و هيّا نلعبو!</p>
       </header>
+
+      <!-- Défi du jour : mêmes questions pour tout le monde -->
+      <button type="button" id="daily-btn" class="daily">
+        <span class="daily-icon" aria-hidden="true">🗓️</span>
+        <span class="daily-text">
+          <span id="daily-title" class="daily-title"></span>
+          <span id="daily-status" class="daily-status"></span>
+        </span>
+        <span id="daily-streak" class="daily-streak"></span>
+      </button>
+
+      <button type="button" id="quick-btn" class="quick-btn">
+        <span>⚡ إلعب توّا</span><small>خلطة · وحدك · 10 كارطات</small>
+      </button>
+      <button type="button" id="install-btn" class="install-btn" hidden>📲 نزّل اللعبة على تليفونك · تخدم بلاش إنترنت</button>
+
+      <p class="home-pick">ولا إختار موضوع 👇</p>
       <div class="frieze" aria-hidden="true"></div>
       <div id="topic-grid" class="topic-grid"></div>
     </div>
@@ -47,21 +69,14 @@
 
       <div id="mode-switch" class="mode-switch" role="group" aria-label="طريقة اللعب">
         <button type="button" data-mode="solo"><span aria-hidden="true">👤</span>وحدي</button>
-        <button type="button" data-mode="duel"><span aria-hidden="true">⚔️</span>واحد ضدّ واحد</button>
+        <button type="button" data-mode="group"><span aria-hidden="true">👥</span>جماعة</button>
+        <button type="button" data-mode="duel"><span aria-hidden="true">⚔️</span>وجه لوجه</button>
       </div>
       <p id="mode-desc" class="mode-desc"></p>
 
       <form id="setup-form" autocomplete="off">
-        <label class="field p1">
-          <span class="dot"></span>
-          <input id="name-p1" maxlength="14" aria-label="إسم اللاعب الأوّل">
-          <span class="seat">⬇️ لوطا</span>
-        </label>
-        <label class="field p2" id="field-p2">
-          <span class="dot"></span>
-          <input id="name-p2" maxlength="14" aria-label="إسم اللاعب الثاني">
-          <span class="seat">⬆️ الفوق</span>
-        </label>
+        <div id="name-fields" class="name-fields"></div>
+        <button type="button" id="add-player" class="add-player" hidden>➕ زيد لاعب</button>
 
         <label class="select-field" id="timer-field">
           <span>⏱️ الوقت متاع كل سؤال</span>
@@ -80,7 +95,7 @@
     </div>
   </section>
 
-  <!-- ================= Mode 1 contre 1 : écran partagé ================= -->
+  <!-- ================= Face à face : écran partagé ================= -->
   <section id="screen-duel" class="screen">
     <div id="zone-p2" class="zone p2 zone-top"></div>
 
@@ -114,6 +129,7 @@
             <div class="face front"><span class="num"></span></div>
             <div class="face back">
               <div class="q-head"><span class="chip category"></span><span class="q-timer"></span></div>
+              <p class="special-banner"></p>
               <p class="hint">📢 اقرا السؤال و الإختيارات بالصوت العالي</p>
               <h2 class="q-text"></h2>
               <ol class="choices"></ol>
@@ -124,6 +140,7 @@
 
       <div class="view view-answer">
         <div class="q-head"><span class="listen"></span><span class="q-timer"></span></div>
+        <p class="special-banner"></p>
         <div class="answers"></div>
       </div>
 
@@ -138,11 +155,12 @@
       </div>
 
       <p class="feedback" aria-live="polite"></p>
+      <p class="fact"></p>
       <button type="button" class="btn primary next" hidden>كمّل ←</button>
     </div>
   </template>
 
-  <!-- ================= Solo & Amoureux : écran normal ================= -->
+  <!-- ================= Solo, Groupe & Amoureux : écran normal ================= -->
   <section id="screen-single" class="screen">
     <header class="single-head">
       <button type="button" id="single-quit" class="icon-btn" aria-label="ارجع">→</button>
@@ -153,6 +171,7 @@
       <button type="button" class="icon-btn sound-toggle" aria-label="قصّ الصوت">🔊</button>
     </header>
     <div id="single-players" class="single-players"></div>
+    <p id="single-legend" class="legend" hidden></p>
     <main id="single-board" class="board board-single" aria-label="الكارطات"></main>
   </section>
 
@@ -163,10 +182,12 @@
         <div class="face back">
           <div class="q-head"><span id="m-chip" class="chip"></span><span id="m-timer" class="q-timer"></span></div>
           <div class="timer-track" id="m-timer-track"><i id="m-timer-bar"></i></div>
+          <p id="m-special" class="special-banner"></p>
           <p id="m-for" class="for-who"></p>
           <h2 id="m-question" class="q-text"></h2>
           <div id="m-answers" class="answers"></div>
           <p id="m-feedback" class="feedback" aria-live="polite"></p>
+          <p id="m-fact" class="fact"></p>
           <div id="m-love-actions" class="love-actions" hidden>
             <button type="button" id="m-heart" class="btn love">💖 جواب يهبّل</button>
             <button type="button" id="m-skip" class="btn ghost">السؤال الجاي ←</button>
@@ -178,16 +199,30 @@
   </div>
 
   <section id="screen-end" class="screen">
-    <div class="panel">
+    <div class="panel" id="end-panel">
       <div id="end-emoji" class="hero-emoji bounce" aria-hidden="true"></div>
       <h1 id="end-title"></h1>
       <p id="end-sub" class="subtitle"></p>
       <div id="end-scores" class="end-scores"></div>
+      <p id="end-grid" class="end-grid" hidden></p>
+      <p id="end-next" class="end-next" hidden></p>
+      <button type="button" id="end-share" class="btn share" hidden></button>
       <button type="button" id="end-replay" class="btn primary">🔁 عاود</button>
       <button type="button" id="end-menu" class="btn ghost">🏠 بدّل الموضوع</button>
+      <p id="end-quote" class="end-quote"></p>
     </div>
   </section>
 
+  <!-- ================= Aide (1ʳᵉ visite + bouton ؟) ================= -->
+  <div id="help" class="sheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <h2 id="help-title" class="sheet-title"></h2>
+      <ol id="help-steps" class="help-steps"></ol>
+      <button type="button" id="help-close" class="btn primary"></button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
 
   <!-- Textes (derja tunisienne) -->
@@ -196,6 +231,7 @@
   <!-- Thèmes (ajoute ici tes nouveaux fichiers de thème) -->
   <script src="js/topics/_registry.js"></script>
   <script src="js/topics/tunisie.js"></script>
+  <script src="js/topics/amthal.js"></script>
   <script src="js/topics/culture.js"></script>
   <script src="js/topics/geographie.js"></script>
   <script src="js/topics/sciences.js"></script>
@@ -210,4 +246,5 @@
   <script src="js/app.js"></script>
 </body>
 </html>
+
 

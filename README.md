@@ -1,34 +1,64 @@
 # 🇹🇳 قلّب الكارطة — Qalleb el Karta
 
 Jeu de cartes-quiz **100 % tunisien**, entièrement en **derja (arabe tunisien)**, jouable sur smartphone :
-10 cartes face cachée, on en touche une, elle se retourne et révèle une question.
+des cartes face cachée, on en touche une, elle se retourne et révèle une question.
+
+## 🌟 Ce qui le rend unique
+
+| Nouveauté | Pourquoi les joueurs le préfèrent |
+|---|---|
+| 🗓️ **تحدّي اليوم** — défi du jour | Les **mêmes 10 questions pour tout le monde** chaque jour, une seule tentative, **série de jours 🔥**, résultat partageable en grille d'emojis (style Wordle) : `🟩🟩🟥🌶️🟩🧿…` |
+| 🤝 **تحدّى صاحبك** — défi par lien | Après une partie solo, un lien WhatsApp/Messenger fait rejouer **exactement les mêmes cartes** à un ami, avec ton score à battre affiché. Aucun compte, aucun serveur. |
+| 🌶️ **Cartes حارّة** | 2 cartes (3 sur 12) sont visibles en orange : **2 points** si bonne réponse → le choix de la carte devient stratégique. |
+| 🧿 **Carte خمسة** cachée | Une carte porte-bonheur révélée au retournement : **seconde chance** après une erreur. |
+| 🎲 **Thème visible en « خلطة »** | Chaque carte montre son thème : on choisit sa catégorie forte. |
+| 👥 **جماعة** — 2 à 6 joueurs | Sur un seul téléphone, chacun son tour (veillées, Ramadan, famille), classement 🥇🥈🥉. |
+| 🗣️ **كمّل المثل** | Nouveau thème : compléter des **proverbes tunisiens**, avec leur sens expliqué. |
+| 💡 **تعرفشي؟** | Une anecdote s'affiche après la réponse (thème Tunisie, proverbes). |
+| 🔥 **Séries** | « 🔥 3 متتاليين! » après 3 bonnes réponses d'affilée ; « شكبّة! 🃏 » pour un 10/10. |
+| ⚡ **إلعب توّا** | Une partie en un seul toucher depuis l'accueil. |
+| ❓ **Aide intégrée** | Explication illustrée à la 1ʳᵉ visite (et via le bouton ؟). |
+| 📴 **Hors ligne** | Installable comme une appli, **fonctionne sans Internet** (service worker). |
 
 ## 🎨 Design tunisien
 
 - **Dos des cartes** = portes bleues cloutées en arc de **Sidi Bou Saïd** (numéro dans un médaillon doré)
 - **Face des cartes** = mur blanchi à la chaux avec bordure en **zellige de Nabeul**
 - **Frises de céramique**, motif d'étoiles à 8 branches en fond, rouge du **drapeau** pour les boutons
-- Thème **للمحبّين** en rose bougainvillier 🌸
+- Thème **للمحبّين** en rose bougainvillier 🌸, cartes **حارّة** couleur harissa 🌶️
 - Polices arabes : **Reem Kufi** (titres, style coufique) et **Cairo** (textes) — interface **RTL**
 
 ## 🗂️ Thèmes (المواضيع)
 
 | Thème | Questions | Type | Modes |
 |---|---|---|---|
-| 🇹🇳 **تونس** (mis en avant) | 29 | Quiz à 3 choix : histoire, lieux, cuisine, culture, sport | وحدي · واحد ضدّ واحد |
-| 🧠 ثقافة عامّة | 15 | Quiz à 3 choix | وحدي · واحد ضدّ واحد |
-| 🌍 جغرافيا | 15 | Quiz à 3 choix | وحدي · واحد ضدّ واحد |
-| 🔬 علوم و طبيعة | 15 | Quiz à 3 choix | وحدي · واحد ضدّ واحد |
-| 🎬 سينما و مزيكة | 15 | Quiz à 3 choix | وحدي · واحد ضدّ واحد |
-| 🎲 خلطة | toutes | Mélange des thèmes quiz | وحدي · واحد ضدّ واحد |
+| 🇹🇳 **تونس** (mis en avant) | 29 + anecdotes | Quiz à 3 choix : histoire, lieux, cuisine, culture, sport | وحدي · جماعة · وجه لوجه |
+| 🗣️ **كمّل المثل** (nouveau) | 24 + sens | Compléter un proverbe tunisien | وحدي · جماعة · وجه لوجه |
+| 🧠 ثقافة عامّة | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
+| 🌍 جغرافيا | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
+| 🔬 علوم و طبيعة | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
+| 🎬 سينما و مزيكة | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
+| 🎲 خلطة | toutes | Mélange des thèmes quiz | وحدي · جماعة · وجه لوجه |
 | 💕 للمحبّين | 31 | Questions **libres**, réponse à voix haute | À deux, écran normal |
 
 ## 🎮 Modes de jeu
 
-### 👤 وحدي — Solo (écran normal)
-Un joueur répond aux 10 cartes. Score sur 10 et **record mémorisé** par thème (affiché sur la tuile 🏅).
+### 🗓️ تحدّي اليوم — Défi du jour
+Grande tuile en haut de l'accueil. 10 questions tirées de tous les thèmes, **identiques pour tous** le même jour
+(tirage reproductible à partir de la date), minuteur fixe de 30 s, une seule tentative.
+À la fin : grille d'emojis, série de jours 🔥, compte à rebours jusqu'au prochain défi et bouton **📤 شارك نتيجتك**.
+Le lien partagé (`…/#daily`) ouvre directement le défi.
 
-### ⚔️ واحد ضدّ واحد — 1 contre 1 (écran partagé, face à face)
+### 👤 وحدي — Solo (écran normal)
+Un joueur, 10 cartes. Score en **points ⭐** (🌶️ = 2 points) et **record mémorisé** par thème (🏅 sur la tuile).
+Bouton **🤝 تحدّى صاحبك** : envoie un lien qui fait rejouer les mêmes cartes à un ami ; à la fin, il voit
+« غلبت Ali! » ou « Ali غلبك » et peut **renvoyer le défi**.
+
+### 👥 جماعة — Groupe (écran normal, 2 à 6 joueurs)
+On se passe le téléphone : chacun son tour retourne une carte (« 🎯 دور Sami »). Chaque joueur joue le même
+nombre de cartes (9, 10 ou 12 selon le nombre de joueurs). Classement final avec médailles.
+
+### ⚔️ وجه لوجه — Face à face (écran partagé)
 Le téléphone est posé à plat entre les joueurs, l'écran est **coupé en deux** (moitié du haut retournée à 180°) :
 
 | Rôle | Ce qu'il voit | Ce qu'il peut faire |
@@ -45,14 +75,15 @@ Pas de minuteur, pas de gagnant : un bilan des cœurs à la fin.
 
 ## ✨ Effets
 
-- **Effets sonores** synthétisés (aucun fichier) : carte, retournement, bonne/mauvaise réponse, temps écoulé,
-  victoire, cœur — bouton 🔊/🔇
+- **Effets sonores** synthétisés (aucun fichier) : carte, retournement, carte spéciale, bonne/mauvaise réponse,
+  temps écoulé, victoire, cœur — bouton 🔊/🔇
 - Minuteur (20 / 30 / 45 s ou بلا وقت) avec bips sur les 5 dernières secondes
 - Vibrations, écran maintenu allumé pendant la partie, confettis (ou pluie de cœurs 💖)
+- Un **proverbe tunisien** (et son sens) en fin de partie
 - Les questions déjà vues ne reviennent pas tant qu'il en reste de nouvelles
-- Installable sur l'écran d'accueil (manifest PWA)
+- Installable sur l'écran d'accueil (bouton 📲 sur Android), raccourci « تحدّي اليوم », **jouable hors ligne**
 
-> 💡 En 1 contre 1, bloquez la rotation automatique du téléphone. Le son fonctionne aussi avec le bouton silencieux de l'iPhone.
+> 💡 En face à face, bloquez la rotation automatique du téléphone. Le son fonctionne aussi avec le bouton silencieux de l'iPhone.
 
 ## 🧱 Technologies & structure
 
@@ -65,11 +96,13 @@ img/flag-tn.svg          → médaillon du drapeau tunisien
 js/lang.js               → TOUS les textes de l'interface en derja (à modifier ici)
 js/topics/_registry.js   → registre des thèmes (format documenté)
 js/topics/*.js           → un fichier par thème (questions en derja)
+js/topics/amthal.js      → thème « كمّل المثل » + liste des proverbes (aussi utilisés en fin de partie)
 js/sound.js              → effets sonores (Web Audio API)
-js/core.js               → outils partagés (tirage, cartes, minuteur, stockage…)
-js/modes/duel.js         → mode 1 contre 1 (écran partagé)
-js/modes/single.js       → modes Solo et Amoureux (écran normal)
-js/app.js                → navigation : accueil → thème → mode → partie
+js/core.js               → outils partagés (tirage, cartes spéciales, défi du jour, liens, partage…)
+js/modes/duel.js         → mode face à face (écran partagé)
+js/modes/single.js       → modes Solo, Groupe et Amoureux (écran normal) + défis
+js/app.js                → navigation : accueil → thème → mode → partie, liens #daily / #c=
+sw.js                    → service worker (jeu jouable hors ligne, toujours à jour en ligne)
 manifest.webmanifest     → installation « Ajouter à l'écran d'accueil »
 icon.svg                 → icône (porte de Sidi Bou Saïd + croissant et étoile)
 publier.bat              → publication / mise à jour sur GitHub Pages en un double-clic
@@ -82,16 +115,22 @@ publier.bat              → publication / mise à jour sur GitHub Pages en un d
 **Ajouter une question** dans un thème quiz (`js/topics/tunisie.js` par ex.) :
 
 ```js
-{ q: 'السؤال متاعك؟', a: ['جواب 1', 'جواب 2', 'جواب 3'], c: 0 },
+{ q: 'السؤال متاعك؟', a: ['جواب 1', 'جواب 2', 'جواب 3'], c: 0, f: 'معلومة صغيرة (اختياري)' },
 ```
 
-`c` = index de la bonne réponse (0, 1 ou 2). Pour le thème للمحبّين, une simple chaîne : `'السؤال متاعك؟',`
+`c` = index de la bonne réponse (0, 1 ou 2), `f` = anecdote « 💡 » optionnelle affichée après la réponse.
+Pour le thème للمحبّين, une simple chaîne : `'السؤال متاعك؟',`
+
+> ⚠️ Ajoute toujours les nouvelles questions **à la fin** de la liste : les liens « تحدّى صاحبك » déjà envoyés
+> retrouvent les questions par leur position.
 
 **Ajouter un thème** : copie un fichier de `js/topics/`, change `id`, `name`, `emoji`, `description`,
 `colors`, `type` (`'quiz'` ou `'love'`) et les questions (minimum 10), puis ajoute sa balise
-`<script src="js/topics/mon-theme.js"></script>` dans `index.html` (section « Thèmes »).
-Il apparaît automatiquement sur l'accueil et dans « خلطة ».
-Options : `image` (remplace l'emoji du médaillon) et `featured: true` (tuile en tête avec ruban « جديد »).
+`<script src="js/topics/mon-theme.js"></script>` dans `index.html` (section « Thèmes ») et son chemin
+dans la liste `ASSETS` de `sw.js` (pour le mode hors ligne).
+Il apparaît automatiquement sur l'accueil, dans « خلطة » et dans le défi du jour.
+Options : `image` (remplace l'emoji du médaillon), `featured: true` (tuile en grand, en tête) et
+`ribbon: 'جديد ✨'` (ruban sur la tuile).
 
 ## ▶️ Tester en local
 

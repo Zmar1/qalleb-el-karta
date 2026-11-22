@@ -1,17 +1,28 @@
 {
   "name": "قلّب الكارطة",
   "short_name": "قلّب الكارطة",
-  "description": "لعبة أسئلة تونسية: وحدك، واحد ضدّ واحد، ولا للمحبّين.",
+  "description": "لعبة أسئلة 100% تونسية: تحدّي اليوم، تحدّى صحابك، وحدك، جماعة، وجه لوجه ولا للمحبّين. تخدم حتى بلاش إنترنت.",
   "lang": "ar-TN",
   "dir": "rtl",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F6EFE3",
   "theme_color": "#0E5AA7",
+  "categories": ["games", "education", "entertainment"],
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "تحدّي اليوم",
+      "short_name": "تحدّي اليوم",
+      "url": "./#daily",
+      "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
   ]
 }
+
 

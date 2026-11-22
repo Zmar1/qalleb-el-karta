@@ -1,6 +1,6 @@
 /**
  * Effets sonores synthétisés avec la Web Audio API (aucun fichier audio nécessaire).
- * Sons disponibles : pick, flip, tick, correct, wrong, timeout, swap, win, tie, heart
+ * Sons disponibles : pick, flip, tick, correct, wrong, timeout, swap, win, tie, heart, special
  *
  * Compatibilité mobile :
  *  - le contexte audio est (re)débloqué à CHAQUE geste de l'utilisateur (touchend / click / keydown),
@@ -174,6 +174,11 @@ const Sound = (() => {
       tone(880, t, 0.35, { type: 'sine', vol: 0.3 });
       tone(1318.5, t + 0.12, 0.5, { type: 'sine', vol: 0.26 });
       tone(1760, t + 0.24, 0.6, { type: 'sine', vol: 0.12 });
+    },
+    // Carte spéciale révélée (🌶️ / 🧿) : petite cascade scintillante
+    special(t) {
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone(f, t + i * 0.06, 0.22, { type: 'sine', vol: 0.22 }));
+      tone(2637, t + 0.26, 0.4, { type: 'triangle', vol: 0.08 });
     },
   };
 
