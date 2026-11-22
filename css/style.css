@@ -542,7 +542,23 @@ h1 {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  /* bascule de visibilité à mi-rotation (~90°) */
+  transition: visibility 0s linear 0.12s;
 }
+.face * { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+/* iOS Safari ignore parfois backface-visibility sur les enfants positionnés
+   (le numéro apparaissait en miroir par-dessus la question) : on masque
+   explicitement la face qui n'est pas visible. */
+.face.back { visibility: hidden; }
+.card.picked .face.front,
+.card.played .face.front,
+.qcard.flipped .face.front,
+.big-card.flipped .face.front { visibility: hidden; }
+.card.picked .face.back,
+.card.played .face.back,
+.qcard.flipped .face.back,
+.big-card.flipped .face.back { visibility: visible; }
 
 /* Dos de carte = porte bleue cloutée de Sidi Bou Saïd */
 .face.front {
