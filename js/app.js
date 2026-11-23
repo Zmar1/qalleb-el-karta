@@ -108,7 +108,7 @@ const App = (() => {
       const badge = document.createElement('span');
       badge.className = 'tile-badge';
       badge.textContent = t.type === 'love'
-        ? L.loveBadge
+        ? L.loveBadge(Core.countQuestions(t))
         : L.questionsBadge(Core.countQuestions(t), store.get(`best.${t.id}`, null));
       text.append(name, desc, badge);
       tile.append(medal, text);

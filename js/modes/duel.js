@@ -191,6 +191,7 @@ const Duel = (() => {
     state.phase = 'picking';
     state.activeCard = card;
     card.el.classList.add('picked');
+    Core.markSeen(card.q);
     Sound.play('pick');
     Core.vibrate(15);
     Core.later(() => showQuestion(card), PICK_DELAY);

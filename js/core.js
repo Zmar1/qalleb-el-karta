@@ -120,7 +120,6 @@ const Core = (() => {
   });
 
   /* ---------- Questions ---------- */
-  const used = new Map(); // topicId -> Set(questionId) déjà jouées
 
   // Identifiant stable « theme-position » (utilisé par les liens de défi et le défi du jour)
   function toQuestion(topic, raw, i) {
@@ -151,19 +150,67 @@ const Core = (() => {
     return { ...q, answers: order.map((i) => q.answers[i]), correct: order.indexOf(q.correct) };
   }
 
-  // Tire n questions en privilégiant celles pas encore jouées dans ce thème
-  function draw(topic, n) {
-    const all = questionsOf(topic);
-    let seen = used.get(topic.id) || new Set();
-    let pool = all.filter((q) => !seen.has(q.id));
-    if (pool.length < n) {
-      seen = new Set();
-      pool = all;
+  /* ---------- Anti-répétition (mémorisée d'une ouverture du jeu à l'autre) ---------- */
+  // Chaque question retournée reçoit un numéro croissant : plus il est petit, plus elle est ancienne.
+  // Le tirage prend d'abord les questions jamais vues, puis les plus anciennes.
+  const SEEN_MAX = 5000;
+  let seenCache = null;
+  const seenKey = (q) => hashString(q.question).toString(36); // indépendant de la position dans la liste
+
+  function seenData() {
+    if (!seenCache) {
+      const d = store.get('seen', null);
+      seenCache = d && typeof d === 'object' && d.m && typeof d.n === 'number' ? d : { n: 0, m: {} };
     }
-    const chosen = shuffle(pool).slice(0, n);
-    chosen.forEach((q) => seen.add(q.id));
-    used.set(topic.id, seen);
-    return chosen.map((q) => (q.answers ? shuffleAnswers(q) : q));
+    return seenCache;
+  }
+
+  // Appelée quand une carte est retournée
+  function markSeen(q) {
+    const d = seenData();
+    d.n += 1;
+    d.m[seenKey(q)] = d.n;
+    const keys = Object.keys(d.m);
+    if (keys.length > SEEN_MAX) {
+      keys.sort((a, b) => d.m[a] - d.m[b]).slice(0, keys.length - SEEN_MAX).forEach((k) => { delete d.m[k]; });
+    }
+    store.set('seen', d);
+  }
+
+  // Jamais vues d'abord, puis les plus anciennes ; ordre aléatoire à égalité
+  function freshest(list) {
+    const { m } = seenData();
+    return shuffle(list)
+      .map((q) => ({ q, s: m[seenKey(q)] || 0 }))
+      .sort((a, b) => a.s - b.s)
+      .map((x) => x.q);
+  }
+
+  // Alterne les thèmes : t1, t2, t3… t1, t2… (sans doublon de texte)
+  function interleave(queues, n = Infinity) {
+    const out = [];
+    const keys = new Set();
+    while (out.length < n && queues.some((list) => list.length)) {
+      queues.forEach((list) => {
+        while (list.length && out.length < n) {
+          const q = list.shift();
+          const k = seenKey(q);
+          if (!keys.has(k)) {
+            keys.add(k);
+            out.push(q);
+            break;
+          }
+        }
+      });
+    }
+    return out;
+  }
+
+  function draw(topic, n) {
+    const chosen = topic.mix
+      ? interleave(shuffle(quizTopics()).map((t) => freshest(questionsOf(t))), n)
+      : freshest(questionsOf(topic)).slice(0, n);
+    return shuffle(chosen).map((q) => (q.answers ? shuffleAnswers(q) : q));
   }
 
   const countQuestions = (topic) => questionsOf(topic).length;
@@ -218,11 +265,30 @@ const Core = (() => {
     return `${pad(Math.floor(min / 60))}:${pad(min % 60)}`;
   }
 
-  // Les mêmes 10 questions (et cartes spéciales) pour tout le monde le même jour
+  // Les mêmes 10 questions (et cartes spéciales) pour tout le monde le même jour.
+  // Toutes les questions sont rangées dans une suite où chaque thème est réparti régulièrement
+  // (au prorata de sa taille) ; chaque jour prend les 10 suivantes → aucune répétition d'un jour
+  // à l'autre tant que la suite n'est pas épuisée, et chaque jour mélange les thèmes.
   function dailyDeck(key) {
+    const day = dayNumber(key) - 1;
+    const topics = quizTopics();
+    const total = topics.reduce((sum, t) => sum + t.questions.length, 0);
+    const perCycle = Math.max(1, Math.floor(total / CARD_COUNT));
+    const cycleRng = seededRandom(hashString(`qalleb:cycle:${Math.floor(day / perCycle)}`));
+    const spread = [];
+    shuffle(topics, cycleRng).forEach((t) => {
+      const list = shuffle(questionsOf(t), cycleRng);
+      const offset = cycleRng();
+      list.forEach((q, i) => spread.push({ q, pos: (i + offset) / list.length }));
+    });
+    const keys = new Set();
+    const sequence = spread
+      .sort((a, b) => a.pos - b.pos)
+      .map((x) => x.q)
+      .filter((q) => !keys.has(seenKey(q)) && keys.add(seenKey(q)));
+    const start = (day % perCycle) * CARD_COUNT;
     const rng = seededRandom(hashString(`qalleb:${key}`));
-    const pool = quizTopics().flatMap(questionsOf);
-    const questions = shuffle(pool, rng).slice(0, CARD_COUNT).map((q) => shuffleAnswers(q, rng));
+    const questions = shuffle(sequence.slice(start, start + CARD_COUNT), rng).map((q) => shuffleAnswers(q, rng));
     return { questions, layout: randomLayout(questions.length, rng) };
   }
 
@@ -435,7 +501,7 @@ const Core = (() => {
   return {
     $, $$, shuffle, pickRandom, vibrate, restartAnim, showScreen, fillMedal, toast, store,
     later, clearLater, keepAwake, releaseWake,
-    draw, countQuestions, createCards, renderBoard, markCard, makeOption, createTimer,
+    draw, countQuestions, markSeen, createCards, renderBoard, markCard, makeOption, createTimer,
     randomLayout, layoutOf, pointsFor, praise, gridOf,
     dayKey, dayNumber, timeToMidnight, dailyDeck, deckFromIds, saveDaily, dailyStreak,
     encode, decode, link, share,

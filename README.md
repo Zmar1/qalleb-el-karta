@@ -28,18 +28,31 @@ des cartes face cachée, on en touche une, elle se retourne et révèle une ques
 - Thème **للمحبّين** en rose bougainvillier 🌸, cartes **حارّة** couleur harissa 🌶️
 - Polices arabes : **Reem Kufi** (titres, style coufique) et **Cairo** (textes) — interface **RTL**
 
-## 🗂️ Thèmes (المواضيع)
+## 🗂️ Thèmes (المواضيع) — 594 questions
 
 | Thème | Questions | Type | Modes |
 |---|---|---|---|
-| 🇹🇳 **تونس** (mis en avant) | 29 + anecdotes | Quiz à 3 choix : histoire, lieux, cuisine, culture, sport | وحدي · جماعة · وجه لوجه |
-| 🗣️ **كمّل المثل** (nouveau) | 24 + sens | Compléter un proverbe tunisien | وحدي · جماعة · وجه لوجه |
-| 🧠 ثقافة عامّة | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
-| 🌍 جغرافيا | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
-| 🔬 علوم و طبيعة | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
-| 🎬 سينما و مزيكة | 15 | Quiz à 3 choix | وحدي · جماعة · وجه لوجه |
-| 🎲 خلطة | toutes | Mélange des thèmes quiz | وحدي · جماعة · وجه لوجه |
-| 💕 للمحبّين | 31 | Questions **libres**, réponse à voix haute | À deux, écran normal |
+| 🇹🇳 **تونس** (mis en avant) | 74 + anecdotes | Histoire, lieux, cuisine, traditions, culture, derja | وحدي · جماعة · وجه لوجه |
+| 🗣️ **كمّل المثل** | 38 + sens | Compléter un proverbe tunisien | وحدي · جماعة · وجه لوجه |
+| 🧠 ثقافة عامّة | 63 | Littérature, art, histoire, maths, monde moderne | وحدي · جماعة · وجه لوجه |
+| 🌍 جغرافيا | 70 | Capitales, records, fleuves, drapeaux, monuments | وحدي · جماعة · وجه لوجه |
+| 🔬 علوم و طبيعة | 64 | Espace, chimie, corps humain, animaux, plantes | وحدي · جماعة · وجه لوجه |
+| 🎬 سينما و مزيكة | 70 | Tunisie & monde arabe, films, dessins animés, musique | وحدي · جماعة · وجه لوجه |
+| ⚽ رياضة (nouveau) | 37 | Football, JO, champions tunisiens | وحدي · جماعة · وجه لوجه |
+| 🧩 ألغاز (nouveau) | 30 | Devinettes en derja | وحدي · جماعة · وجه لوجه |
+| 🎲 خلطة | toutes | Mélange qui **alterne les thèmes** | وحدي · جماعة · وجه لوجه |
+| 💕 للمحبّين | 148 | Souvenirs, fous rires, « تحبّ… ولا… ؟ », rêves, phrases à compléter, petits défis 🎯, « تعرفني مليح ؟ », touche tunisienne | À deux, écran normal |
+
+## 🔁 Anti-répétition
+
+- **Mémoire d'une ouverture à l'autre** : chaque carte retournée est notée sur le téléphone (par le texte de la
+  question, donc insensible à l'ordre des listes). Le tirage prend **d'abord les questions jamais vues**, puis
+  les plus anciennes. Exemple : 6 parties de « ثقافة عامّة » ou 14 parties « للمحبّين » de suite sans aucune répétition.
+- **Commun à tous les modes** : une question vue en solo, en groupe, en face à face, en « خلطة » ou au défi du jour
+  ne revient pas tout de suite ailleurs.
+- **« خلطة »** : les cartes alternent les thèmes (8 thèmes différents sur 10 cartes).
+- **Défi du jour** : chaque thème est réparti régulièrement sur un cycle de 44 jours → **aucune question répétée
+  d'un jour à l'autre** pendant le cycle, et au moins 6 thèmes chaque jour.
 
 ## 🎮 Modes de jeu
 
@@ -80,7 +93,7 @@ Pas de minuteur, pas de gagnant : un bilan des cœurs à la fin.
 - Minuteur (20 / 30 / 45 s ou بلا وقت) avec bips sur les 5 dernières secondes
 - Vibrations, écran maintenu allumé pendant la partie, confettis (ou pluie de cœurs 💖)
 - Un **proverbe tunisien** (et son sens) en fin de partie
-- Les questions déjà vues ne reviennent pas tant qu'il en reste de nouvelles
+- Les questions déjà vues ne reviennent pas tant qu'il en reste de nouvelles, **même après avoir fermé le jeu**
 - Installable sur l'écran d'accueil (bouton 📲 sur Android), raccourci « تحدّي اليوم », **jouable hors ligne**
 
 > 💡 En face à face, bloquez la rotation automatique du téléphone. Le son fonctionne aussi avec le bouton silencieux de l'iPhone.

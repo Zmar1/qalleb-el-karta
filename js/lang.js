@@ -24,7 +24,7 @@ const L = {
 
   /* ---------- Accueil ---------- */
   questionsBadge: (n, best) => `🎯 ${n} سؤال${best !== null ? ` · 🏅 ${best}` : ''}`,
-  loveBadge: '💬 أجوبة حرّة · لزوز',
+  loveBadge: (n) => `💬 ${n} سؤال · لزوز`,
   mix: { name: 'خلطة', description: 'شويّة من كل موضوع' },
 
   /* ---------- Aide (affichée à la 1ʳᵉ visite et via le bouton ؟) ---------- */

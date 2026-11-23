@@ -3,7 +3,7 @@
  *  - fichiers du jeu : réseau d'abord (toujours la dernière version), cache si pas de connexion ;
  *  - polices Google : cache d'abord, mise à jour en arrière-plan.
  */
-const CACHE = 'qalleb-v1';
+const CACHE = 'qalleb-v2';
 const ASSETS = [
   './',
   'index.html',
@@ -19,6 +19,8 @@ const ASSETS = [
   'js/topics/geographie.js',
   'js/topics/sciences.js',
   'js/topics/cinema-musique.js',
+  'js/topics/sport.js',
+  'js/topics/alghaz.js',
   'js/topics/amoureux.js',
   'js/sound.js',
   'js/core.js',
