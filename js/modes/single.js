@@ -32,9 +32,19 @@ const Single = (() => {
     timerBar: $('#m-timer-bar'),
     special: $('#m-special'),
     forWho: $('#m-for'),
+    figure: $('#m-figure'),
     question: $('#m-question'),
     answers: $('#m-answers'),
+    typed: $('#m-typed'),
+    input: $('#m-input'),
+    submit: $('#m-submit'),
+    hint: $('#m-hint'),
     feedback: $('#m-feedback'),
+    reveal: $('#m-reveal'),
+    report: $('#m-report'),
+    appeal: $('#m-appeal'),
+    appealText: $('#m-appeal-text'),
+    accept: $('#m-accept'),
     fact: $('#m-fact'),
     loveActions: $('#m-love-actions'),
     heartBtn: $('#m-heart'),
@@ -64,6 +74,8 @@ const Single = (() => {
     cards: [],
     activeCard: null,
     phase: 'idle',    // idle | pick | picking | question | result | closing | end
+    level: 'medium',  // easy | medium | hard
+    baseTime: 0,      // temps choisi (avant le bonus du niveau صعيب)
     timeLimit: 0,
   };
   let shareAction = null;
@@ -71,6 +83,7 @@ const Single = (() => {
   const isLove = () => state.mode === 'love';
   const isGroup = () => state.mode === 'group';
   const isSolo = () => state.mode === 'solo';
+  const isTyped = () => state.level === 'hard' && !isLove();
   const kind = () => (state.context ? state.context.kind : null);
 
   const timer = Core.createTimer({
@@ -81,7 +94,7 @@ const Single = (() => {
       el.timerText.textContent = L.timer(sec);
       el.timerText.classList.toggle('low', low);
     },
-    onEnd: () => answer(-1),
+    onEnd: () => (isTyped() ? answerTyped(null) : answer(-1)),
   });
 
   /* ---------- Affichage ---------- */
@@ -128,11 +141,13 @@ const Single = (() => {
   }
 
   /* ---------- Déroulement ---------- */
-  function start({ mode, topic, names, timeLimit = 0, context = null }) {
+  function start({ mode, topic, names, timeLimit = 0, level = 'medium', context = null }) {
     state.mode = mode;
     state.topic = topic;
     state.context = context;
-    state.timeLimit = mode === 'love' ? 0 : timeLimit;
+    state.level = Core.isLevel(level) ? level : 'medium';
+    state.baseTime = mode === 'love' ? 0 : timeLimit;
+    state.timeLimit = Core.timeFor(state.level, state.baseTime);
     state.players = names.map((name) => ({ name, score: 0, correct: 0, streak: 0 }));
     newGame();
   }
@@ -149,7 +164,7 @@ const Single = (() => {
       state.cards = Core.createCards(deck.questions, deck.layout);
     } else {
       const count = isGroup() ? GROUP_CARDS[state.players.length] || 10 : 10;
-      const questions = Core.draw(state.topic, count);
+      const questions = Core.draw(state.topic, count, { typed: isTyped() });
       state.cards = Core.createCards(questions, isLove() ? null : Core.randomLayout(questions.length));
     }
     state.current = isSolo() ? 0 : Math.floor(Math.random() * state.players.length);
@@ -200,9 +215,14 @@ const Single = (() => {
     el.special.className = 'special-banner';
     el.feedback.textContent = '';
     el.feedback.className = 'feedback';
+    el.reveal.textContent = '';
+    el.report.hidden = true;
+    el.appeal.hidden = true;
     el.fact.textContent = '';
     el.next.hidden = true;
     el.answers.innerHTML = '';
+    el.typed.hidden = true;
+    Core.fillFigure(el.figure, q);
 
     if (isLove()) {
       el.forWho.textContent = L.single.loveFor(player.name);
@@ -213,13 +233,24 @@ const Single = (() => {
     } else {
       el.forWho.textContent = isGroup() ? L.group.for(player.name) : '';
       el.loveActions.hidden = true;
-      el.answers.classList.add('locked');
-      q.answers.forEach((text, i) => {
-        const b = Core.makeOption('button', i, text);
-        b.disabled = true;
-        b.addEventListener('click', () => answer(i));
-        el.answers.appendChild(b);
-      });
+      if (isTyped()) {
+        // صعيب : pas de choix, on écrit la réponse
+        el.typed.hidden = false;
+        el.input.value = '';
+        el.input.placeholder = L.typed.placeholder;
+        el.input.disabled = true;
+        el.submit.disabled = true;
+        el.submit.textContent = L.typed.submit;
+        el.hint.textContent = L.typed.hint[Answer.hint(q)];
+      } else {
+        el.answers.classList.add('locked');
+        Core.choicesFor(q, state.level).forEach((i, pos) => {
+          const b = Core.makeOption('button', i, q.answers[i], pos);
+          b.disabled = true;
+          b.addEventListener('click', () => answer(i));
+          el.answers.appendChild(b);
+        });
+      }
       const hasTimer = state.timeLimit > 0;
       el.timerTrack.hidden = !hasTimer;
       el.timerBar.style.width = '100%';
@@ -248,6 +279,11 @@ const Single = (() => {
     Core.later(() => {
       if (isLove()) {
         setLoveButtons(true);
+      } else if (isTyped()) {
+        el.input.disabled = false;
+        el.submit.disabled = false;
+        try { el.input.focus(); } catch (_) { /* ignoré */ }
+        timer.start(state.timeLimit);
       } else {
         el.answers.classList.remove('locked');
         [...el.answers.children].forEach((b) => { b.disabled = false; });
@@ -256,53 +292,114 @@ const Single = (() => {
     }, UNLOCK_DELAY);
   }
 
-  /* ---------- Quiz : réponse à choix ---------- */
+  /* ---------- Quiz : réponse à choix (ساهل / متوسّط) ---------- */
   function answer(choice) {
-    if (state.phase !== 'question' || isLove()) return;
+    if (state.phase !== 'question' || isLove() || isTyped()) return;
 
     const card = state.activeCard;
     const { q } = card;
-    const player = state.players[state.current];
     const isCorrect = choice === q.correct;
     const timedOut = choice === -1;
     const buttons = [...el.answers.children];
+    const indexOf = (b) => Number(b.dataset.i);
 
     // 🧿 Khamsa : la 1ʳᵉ erreur est pardonnée, le minuteur continue
     if (!isCorrect && !timedOut && card.special === 'khamsa' && !card.chanceUsed) {
       card.chanceUsed = true;
-      buttons[choice].classList.add('wrong');
-      buttons[choice].disabled = true;
-      el.feedback.textContent = L.special.khamsaSave;
-      el.feedback.className = 'feedback lucky';
-      Sound.play('special');
-      Core.vibrate([30, 40, 30]);
+      const btn = buttons.find((b) => indexOf(b) === choice);
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      lucky();
       return;
     }
 
     state.phase = 'result';
     timer.stop();
-
-    buttons.forEach((b, i) => {
+    buttons.forEach((b) => {
+      const i = indexOf(b);
       b.disabled = true;
       if (i === q.correct) b.classList.add('correct');
       else if (i === choice) b.classList.add('wrong');
       else if (!b.classList.contains('wrong')) b.classList.add('dim');
     });
+    settle(card, isCorrect, timedOut ? L.timeUp : L.wrong);
+  }
 
+  /* ---------- Quiz : réponse écrite (صعيب) ---------- */
+  function answerTyped(raw) {
+    if (state.phase !== 'question' || !isTyped()) return;
+    const card = state.activeCard;
+    const { q } = card;
+    const timedOut = raw === null;
+    const text = timedOut ? el.input.value.trim() : String(raw).trim();
+    if (!timedOut && !text) {
+      el.input.focus();
+      return;
+    }
+    const verdict = text ? Answer.check(text, q) : { ok: false, close: false };
+
+    // 🧿 Khamsa : on efface et on réessaie
+    if (!verdict.ok && !timedOut && card.special === 'khamsa' && !card.chanceUsed) {
+      card.chanceUsed = true;
+      el.reveal.textContent = L.typed.wrote(text);
+      el.input.value = '';
+      el.input.focus();
+      lucky();
+      return;
+    }
+
+    state.phase = 'result';
+    timer.stop();
+    el.input.disabled = true;
+    el.submit.disabled = true;
+    el.input.blur();
+    el.reveal.textContent = [text && L.typed.wrote(text), L.typed.answer(q.answers[q.correct])].filter(Boolean).join(' · ');
+    settle(card, verdict.ok, timedOut ? L.timeUp : verdict.close ? L.typed.close : L.typed.wrong);
+
+    // ⚖️ En groupe, la table peut valider une réponse que la machine a refusée
+    if (!verdict.ok && isGroup() && text) {
+      el.appealText.textContent = L.typed.appeal;
+      el.accept.textContent = L.typed.accept;
+      el.appeal.hidden = false;
+    }
+    // 📮 Signaler à l'admin une réponse juste refusée (il l'ajoutera aux variantes acceptées)
+    if (!verdict.ok && text) {
+      el.report.textContent = L.typed.report;
+      el.report.hidden = false;
+      el.report.onclick = () => Core.share(L.typed.reportText(q.id, q.question, text, q.answers[q.correct]));
+    }
+  }
+
+  function lucky() {
+    el.feedback.textContent = L.special.khamsaSave;
+    el.feedback.className = 'feedback lucky';
+    Sound.play('special');
+    Core.vibrate([30, 40, 30]);
+  }
+
+  function award(card, player) {
+    const points = Core.pointsFor(card, state.level);
+    player.score += points;
+    player.correct += 1;
+    player.streak += 1;
+    return points;
+  }
+
+  // Résultat commun aux choix et à l'écrit
+  function settle(card, isCorrect, failText) {
+    const { q } = card;
+    const player = state.players[state.current];
     if (isCorrect) {
-      const points = Core.pointsFor(card);
-      player.score += points;
-      player.correct += 1;
-      player.streak += 1;
+      const points = award(card, player);
       el.feedback.textContent = Core.praise(points, player.streak);
       el.feedback.className = 'feedback ok';
       Sound.play('correct');
       Core.vibrate(40);
     } else {
       player.streak = 0;
-      el.feedback.textContent = timedOut ? L.timeUp : L.wrong;
+      el.feedback.textContent = failText;
       el.feedback.className = 'feedback ko';
-      Sound.play(timedOut ? 'timeout' : 'wrong');
+      Sound.play(failText === L.timeUp ? 'timeout' : 'wrong');
       Core.vibrate([60, 40, 60]);
     }
     el.special.textContent = '';
@@ -316,6 +413,19 @@ const Single = (() => {
     el.next.hidden = false;
     // Petits écrans : le bouton « كمّل » reste visible même avec l'anecdote
     if (el.next.scrollIntoView) el.next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // ⚖️ La table accepte la réponse écrite refusée par la machine
+  function acceptAppeal() {
+    const card = state.activeCard;
+    if (state.phase !== 'result' || !card || card.correct) return;
+    el.appeal.hidden = true;
+    const points = award(card, state.players[card.by]);
+    card.correct = true;
+    el.feedback.textContent = `${L.typed.accepted} ${L.plus(points)}`;
+    el.feedback.className = 'feedback ok';
+    Sound.play('correct');
+    updateHeader();
   }
 
   /* ---------- Amoureux : réponse libre ---------- */
@@ -487,11 +597,13 @@ const Single = (() => {
       k: layout.khamsa,
       n: p.name,
       s: p.score,
-      l: state.timeLimit,
+      l: state.baseTime,
+      d: state.level,
     });
+    const level = L.levels[state.level];
     const text = replyTo
       ? L.challenge.replyText(replyTo.name, replyTo.score, p.score, state.topic.name)
-      : L.challenge.shareText(p.score, state.topic.name);
+      : L.challenge.shareText(p.score, state.topic.name, `${level.emoji} ${level.label}`);
     Core.share(text, Core.link(`c=${code}`));
   }
 
@@ -582,6 +694,11 @@ const Single = (() => {
 
   /* ---------- Événements ---------- */
   el.next.addEventListener('click', closeCard);
+  el.typed.addEventListener('submit', (e) => {
+    e.preventDefault();
+    answerTyped(el.input.value);
+  });
+  el.accept.addEventListener('click', acceptAppeal);
   el.heartBtn.addEventListener('click', () => loveDone(true));
   el.skipBtn.addEventListener('click', () => loveDone(false));
   el.end.share.addEventListener('click', () => { if (shareAction) shareAction(); });

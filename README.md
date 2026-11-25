@@ -28,11 +28,11 @@ des cartes face cachée, on en touche une, elle se retourne et révèle une ques
 - Thème **للمحبّين** en rose bougainvillier 🌸, cartes **حارّة** couleur harissa 🌶️
 - Polices arabes : **Reem Kufi** (titres, style coufique) et **Cairo** (textes) — interface **RTL**
 
-## 🗂️ Thèmes (المواضيع) — 594 questions
+## 🗂️ Thèmes (المواضيع) — 615 questions
 
 | Thème | Questions | Type | Modes |
 |---|---|---|---|
-| 🇹🇳 **تونس** (mis en avant) | 74 + anecdotes | Histoire, lieux, cuisine, traditions, culture, derja | وحدي · جماعة · وجه لوجه |
+| 🇹🇳 **تونس** (mis en avant) | 95 dont 21 photos + anecdotes | Histoire, lieux, cuisine, traditions, culture, derja | وحدي · جماعة · وجه لوجه |
 | 🗣️ **كمّل المثل** | 38 + sens | Compléter un proverbe tunisien | وحدي · جماعة · وجه لوجه |
 | 🧠 ثقافة عامّة | 63 | Littérature, art, histoire, maths, monde moderne | وحدي · جماعة · وجه لوجه |
 | 🌍 جغرافيا | 70 | Capitales, records, fleuves, drapeaux, monuments | وحدي · جماعة · وجه لوجه |
@@ -42,6 +42,80 @@ des cartes face cachée, on en touche une, elle se retourne et révèle une ques
 | 🧩 ألغاز (nouveau) | 30 | Devinettes en derja | وحدي · جماعة · وجه لوجه |
 | 🎲 خلطة | toutes | Mélange qui **alterne les thèmes** | وحدي · جماعة · وجه لوجه |
 | 💕 للمحبّين | 148 | Souvenirs, fous rires, « تحبّ… ولا… ؟ », rêves, phrases à compléter, petits défis 🎯, « تعرفني مليح ؟ », touche tunisienne | À deux, écran normal |
+
+## 🎚️ 3 niveaux de difficulté (choisis à la configuration, mémorisés)
+
+| Niveau | Comment on répond | Points (×2 sur une carte 🌶️) |
+|---|---|---|
+| 🟢 **ساهل** | 2 choix seulement (la bonne réponse + 1 piège) | 1 |
+| 🟡 **متوسّط** | 3 choix | 2 |
+| 🔴 **صعيب** | **Aucun choix** : on écrit la réponse, en **arabe ou en français** (temps +50 %) | 3 |
+
+Le **défi du jour** est toujours en 🟡 (résultats comparables pour tous). Un lien « تحدّى صاحبك » garde le niveau :
+l'ami joue au même niveau que toi.
+
+### ✍️ Correction de la réponse écrite (fiable)
+`js/answer.js` compare la saisie à la bonne réponse et à ses variantes (`js/topics/_answers.js`) :
+- **normalisation** : hamza (أ إ آ), ة/ه, ى/ي, voyelles et chadda, article « ال », lettres ڨ/ڤ, accents et articles
+  français (le, la, l', de…), chiffres arabes ٠-٩, ordre des mots (« أصفر و أحمر » = « أحمر و أصفر ») ;
+- **1 à 2 fautes tolérées** : aucune jusqu'à 3 lettres, 1 faute de 4 à 6 lettres, 2 au-delà (une inversion de deux
+  lettres compte pour une seule faute) ;
+- **nombres exacts** : 1956 ≠ 1957 (l'unité est facultative : « 42,195 km » = « 42.195 كم ») ;
+- **3 garde-fous** : une saisie aussi proche d'un mauvais choix que de la bonne réponse est refusée ; une saisie
+  approximative qui est exactement **une autre réponse connue du jeu** est refusée (« طيّارة » ≠ « سيّارة ») ;
+  une question n'est posée à l'écrit que si ses mauvais choix ne peuvent pas passer pour la bonne réponse.
+
+Mesuré sur toutes les questions : 461/467 posables à l'écrit, 100 % des fautes de frappe simulées acceptées,
+aucune réponse d'une autre question acceptée à tort (hors équivalences voulues comme « تونس » pour « تونس العاصمة »).
+
+### ⚖️ L'arbitre (« الحكم ») pour la compétition
+- **جماعة (groupe)** : si la machine refuse une réponse écrite, la bonne réponse s'affiche et la table peut
+  appuyer sur **« ✅ نقبلوه »** pour la valider (les points sont alors accordés).
+- **وجه لوجه (face à face)** en 🔴 : pas de clavier ; le répondeur **répond à voix haute** et celui qui lit la
+  question (il voit la bonne réponse) est **l'arbitre** : ✅ صحيح / ❌ غالط.
+- **وحدي (solo)** : correction automatique uniquement (records et défis restent équitables).
+
+### Validation par l'admin
+Après une réponse écrite refusée, le bouton « جوابي صحيح؟ بلّغ الأدمين » prépare un message (WhatsApp, Messenger…)
+avec l'identifiant de la question (ex. `tunisie-12`), la réponse tapée et la bonne réponse. L'admin ajoute la
+variante dans `js/topics/_answers.js` ; elle est acceptée pour tout le monde à la mise à jour suivante :
+
+```js
+'tunisie-12': ['مجردة', 'Medjerda', 'Mejerda', 'Majerda'],   // ← ajoute la nouvelle variante ici
+```
+
+## 📍 Questions photo (thème تونس)
+
+21 photos de lieux tunisiens (`img/places/`) : « وين تلقى البلاصة هاذي؟ ». Le joueur répond en géographie (ville,
+île, site). En face à face, le répondeur voit aussi la photo. Chaque photo affiche son crédit (auteur · licence).
+Photos libres de Wikimedia Commons, redimensionnées (~45 Ko), disponibles hors ligne :
+
+| Fichier | Auteur | Licence | Source |
+|---|---|---|---|
+| `sidi-bou-said.jpg` | Mohamed Moslem Mosbah | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:Sidi_Chebaan.jpg) |
+| `el-jem.jpg` | Carole Raddato | CC BY-SA 2.0 | [Commons](https://commons.wikimedia.org/wiki/File:The_Amphitheatre_of_El_Jem,_built_around_AD_238_in_Thysdrus_in_Africa_Proconsularis,_the_estimated_capacity_is_35,000,_Tunisia_-_52717762494.jpg) |
+| `kairouan.jpg` | Marek Szarejko | CC BY-SA 2.0 | [Commons](https://commons.wikimedia.org/wiki/File:Great_Mosque_of_Kairouan_Panorama_-_Grande_Mosqu%C3%A9e_de_Kairouan_Panorama.jpg) |
+| `dougga.jpg` | Emna Trabelsi | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:Dougga,_Beja.jpg) |
+| `carthage.jpg` | ISAW | CC BY 2.0 | [Commons](https://commons.wikimedia.org/wiki/File:Antonine_Baths_at_Carthage.jpg) |
+| `matmata.jpg` | Colin Kenworthy | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:Matmata,_Tunisia.JPG) |
+| `chott-el-djerid.jpg` | Kais photographies | CC BY-SA 4.0 | [Commons](https://commons.wikimedia.org/wiki/File:Chott_Djerid_003.jpg) |
+| `djerba.jpg` | Wikimedia Commons | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:El_Ghriba.jpg) |
+| `zitouna.jpg` | T A | CC BY-SA 2.0 | [Commons](https://commons.wikimedia.org/wiki/File:Minaret_et_patio_de_la_mosqu%C3%A9e_Zitouna_au_centre_de_la_M%C3%A9dina_de_Tunis.jpg) |
+| `monastir.jpg` | Mohamed Ezzi | CC BY-SA 4.0 | [Commons](https://commons.wikimedia.org/wiki/File:Grand_Ribat_Monastir.JPG) |
+| `tataouine.jpg` | Ian Sewell | CC BY 2.5 | [Commons](https://commons.wikimedia.org/wiki/File:Ksar_Ouled_Soltane_01.jpg) |
+| `sbeitla.jpg` | Bernard Gagnon | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:Sbeitla_10.jpg) |
+| `ichkeul.jpg` | Dhfaouzi | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:Vue_matinale_de_la_montagne_dominant_le_parc_Ichkeul.jpg) |
+| `tabarka.jpg` | Noomen9 | CC BY-SA 4.0 | [Commons](https://commons.wikimedia.org/wiki/File:Ile_de_tabarka_1.jpg) |
+| `tozeur.jpg` | Rawen Ab | CC BY-SA 4.0 | [Commons](https://commons.wikimedia.org/wiki/File:Tozeur_sud_tunisien.jpg) |
+| `testour.jpg` | Noomen9 | CC BY-SA 4.0 | [Commons](https://commons.wikimedia.org/wiki/File:Grande_Mosqu%C3%A9e_de_Testour_31.jpg) |
+| `bulla-regia.jpg` | Houss 2020 | CC BY-SA 4.0 | [Commons](https://commons.wikimedia.org/wiki/File:Bulla_regia_archaeological_site.jpg) |
+| `kerkouane.jpg` | CarlesVA | Public domain | [Commons](https://commons.wikimedia.org/wiki/File:Kerkouane_-_panorama.jpg) |
+| `bizerte.jpg` | Khaled Abdelmoumen | CC BY 2.0 | [Commons](https://commons.wikimedia.org/wiki/File:Bizerte_bridge_from_south_side(zarzouna).jpg) |
+| `tunis-avenue.jpg` | Dacoslett | CC0 | [Commons](https://commons.wikimedia.org/wiki/File:TunisAveHabibBourguiba.jpg) |
+| `zaghouan.jpg` | Mathiasrex | CC BY-SA 3.0 | [Commons](https://commons.wikimedia.org/wiki/File:Zaghouan_aqueduc.jpg) |
+
+**Ajouter une photo** : place un JPEG (~720 px de large) dans `img/places/`, ajoute la question **à la fin** de
+`js/topics/tunisie.js` avec `img` et `credit`, ses variantes dans `_answers.js` et son nom dans `sw.js` (`PLACES`).
 
 ## 🔁 Anti-répétition
 

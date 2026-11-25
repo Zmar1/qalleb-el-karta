@@ -45,6 +45,9 @@ const App = (() => {
     modeSwitch: $('#mode-switch'),
     modeBtns: $$('#mode-switch button'),
     modeDesc: $('#mode-desc'),
+    levelSwitch: $('#level-switch'),
+    levelBtns: $$('#level-switch button'),
+    levelDesc: $('#level-desc'),
     form: $('#setup-form'),
     fields: $('#name-fields'),
     addPlayer: $('#add-player'),
@@ -60,6 +63,7 @@ const App = (() => {
   let special = null;   // null | { kind: 'daily' | 'challenge', context, timeLimit, hero }
   let mode = MODES.includes(store.get('mode', 'duel')) ? store.get('mode', 'duel') : 'duel';
   let groupSize = clamp(store.get('groupSize', 3), 2, MAX_PLAYERS);
+  let level = Core.isLevel(store.get('level', 'medium')) ? store.get('level', 'medium') : 'medium';
   let draft = [];       // noms en cours de saisie (conservés quand on change de mode)
 
   const currentMode = () => {
@@ -165,6 +169,7 @@ const App = (() => {
     openSetup(dailyTopic, {
       kind: 'daily',
       timeLimit: DAILY_TIME,
+      level: 'medium', // même niveau pour tout le monde → résultats comparables
       context: { kind: 'daily', key, num, deck: Core.dailyDeck(key) },
     });
   }
@@ -182,11 +187,14 @@ const App = (() => {
       name: String(data.n || '').trim().slice(0, 14) || L.defaultNames.p(1),
       score: Math.max(0, parseInt(data.s, 10) || 0),
     };
+    const lvl = Core.isLevel(data.d) ? data.d : 'medium';
+    const lvlText = `${L.levels[lvl].emoji} ${L.levels[lvl].label}`;
     openSetup(real, {
       kind: 'challenge',
       timeLimit: TIMES.includes(data.l) ? data.l : 30,
+      level: lvl,
       context: { kind: 'challenge', from, deck },
-      hero: { emoji: '🤝', name: L.challenge.title(from.name), desc: L.challenge.desc(from.score, real.name) },
+      hero: { emoji: '🤝', name: L.challenge.title(from.name), desc: L.challenge.desc(from.score, real.name, lvlText) },
     });
   }
 
@@ -241,6 +249,8 @@ const App = (() => {
     const love = t.type === 'love';
     el.modeSwitch.hidden = love || !!sp;
     el.timerField.hidden = love || !!sp;
+    el.levelSwitch.hidden = love || !!sp;
+    el.levelDesc.hidden = love;
     el.panel.classList.toggle('theme-love', love);
 
     draft = loadNames(love);
@@ -257,7 +267,16 @@ const App = (() => {
     el.modeDesc.hidden = !!special;
     el.tip.hidden = m !== 'duel';
     el.startBtn.textContent = special ? L[special.kind].start : info.start;
+    applyLevel();
     renderFields();
+  }
+
+  // Niveau : imposé par le défi du jour / le lien, sinon choisi (et mémorisé)
+  function applyLevel() {
+    const lvl = special ? special.level : level;
+    const info = L.levels[lvl];
+    el.levelBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.level === lvl)));
+    el.levelDesc.textContent = lvl === 'hard' && currentMode() === 'duel' ? info.duel : info.desc;
   }
 
   function renderFields() {
@@ -327,6 +346,13 @@ const App = (() => {
     applyMode();
   }));
 
+  el.levelBtns.forEach((b) => b.addEventListener('click', () => {
+    level = b.dataset.level;
+    store.set('level', level);
+    Sound.play('pick');
+    applyLevel();
+  }));
+
   el.back.addEventListener('click', home);
 
   el.form.addEventListener('submit', (e) => {
@@ -339,15 +365,17 @@ const App = (() => {
     saveNames(m === 'love', raw);
 
     if (special) {
-      Single.start({ mode: 'solo', topic, names, timeLimit: special.timeLimit, context: special.context });
+      Single.start({
+        mode: 'solo', topic, names, timeLimit: special.timeLimit, level: special.level, context: special.context,
+      });
       return;
     }
     const timeLimit = parseInt(el.timerSelect.value, 10) || 0;
     store.set('timer', timeLimit);
 
     if (m === 'love') Single.start({ mode: 'love', topic, names });
-    else if (m === 'duel') Duel.start({ topic, names, timeLimit });
-    else Single.start({ mode: m, topic, names, timeLimit });
+    else if (m === 'duel') Duel.start({ topic, names, timeLimit, level });
+    else Single.start({ mode: m, topic, names, timeLimit, level });
   });
 
   /* ---------- Raccourcis de l'accueil ---------- */
@@ -357,12 +385,12 @@ const App = (() => {
     openDaily();
   });
 
-  // ⚡ Une partie en un seul toucher : solo, « خلطة », dernier nom utilisé
+  // ⚡ Une partie en un seul toucher : solo, « خلطة », dernier nom et dernier niveau utilisés
   el.quickBtn.addEventListener('click', () => {
     Sound.unlock();
     Sound.play('pick');
     const name = (loadNames(false)[0] || '').trim() || L.defaultNames.p(1);
-    Single.start({ mode: 'solo', topic: MIX, names: [name], timeLimit: savedTimer() });
+    Single.start({ mode: 'solo', topic: MIX, names: [name], timeLimit: savedTimer(), level });
   });
 
   /* ---------- Aide ---------- */

@@ -74,6 +74,13 @@
       </div>
       <p id="mode-desc" class="mode-desc"></p>
 
+      <div id="level-switch" class="level-switch" role="group" aria-label="المستوى">
+        <button type="button" data-level="easy"><span aria-hidden="true">🟢</span>ساهل</button>
+        <button type="button" data-level="medium"><span aria-hidden="true">🟡</span>متوسّط</button>
+        <button type="button" data-level="hard"><span aria-hidden="true">🔴</span>صعيب</button>
+      </div>
+      <p id="level-desc" class="level-desc"></p>
+
       <form id="setup-form" autocomplete="off">
         <div id="name-fields" class="name-fields"></div>
         <button type="button" id="add-player" class="add-player" hidden>➕ زيد لاعب</button>
@@ -130,17 +137,25 @@
             <div class="face back">
               <div class="q-head"><span class="chip category"></span><span class="q-timer"></span></div>
               <p class="special-banner"></p>
+              <figure class="q-figure" hidden><img alt=""><figcaption></figcaption></figure>
               <p class="hint">📢 اقرا السؤال و الإختيارات بالصوت العالي</p>
               <h2 class="q-text"></h2>
               <ol class="choices"></ol>
+              <p class="judge-answer"></p>
             </div>
           </div>
+        </div>
+        <div class="judge" hidden>
+          <button type="button" class="btn judge-yes">✅ صحيح</button>
+          <button type="button" class="btn judge-no">❌ غالط</button>
         </div>
       </div>
 
       <div class="view view-answer">
         <div class="q-head"><span class="listen"></span><span class="q-timer"></span></div>
         <p class="special-banner"></p>
+        <figure class="q-figure" hidden><img alt=""><figcaption></figcaption></figure>
+        <p class="say" hidden></p>
         <div class="answers"></div>
       </div>
 
@@ -184,9 +199,21 @@
           <div class="timer-track" id="m-timer-track"><i id="m-timer-bar"></i></div>
           <p id="m-special" class="special-banner"></p>
           <p id="m-for" class="for-who"></p>
+          <figure id="m-figure" class="q-figure" hidden><img alt=""><figcaption></figcaption></figure>
           <h2 id="m-question" class="q-text"></h2>
           <div id="m-answers" class="answers"></div>
+          <form id="m-typed" class="typed" hidden autocomplete="off">
+            <input id="m-input" class="typed-input" dir="auto" maxlength="40" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+            <button type="submit" id="m-submit" class="btn primary typed-go"></button>
+            <p id="m-hint" class="typed-hint"></p>
+          </form>
           <p id="m-feedback" class="feedback" aria-live="polite"></p>
+          <p id="m-reveal" class="reveal"></p>
+          <button type="button" id="m-report" class="report-btn" hidden></button>
+          <div id="m-appeal" class="appeal" hidden>
+            <p id="m-appeal-text"></p>
+            <button type="button" id="m-accept" class="btn ghost"></button>
+          </div>
           <p id="m-fact" class="fact"></p>
           <div id="m-love-actions" class="love-actions" hidden>
             <button type="button" id="m-heart" class="btn love">💖 جواب يهبّل</button>
@@ -239,9 +266,12 @@
   <script src="js/topics/sport.js"></script>
   <script src="js/topics/alghaz.js"></script>
   <script src="js/topics/amoureux.js"></script>
+  <!-- Réponses acceptées à l'écrit (niveau صعيب) -->
+  <script src="js/topics/_answers.js"></script>
 
   <!-- Moteur -->
   <script src="js/sound.js"></script>
+  <script src="js/answer.js"></script>
   <script src="js/core.js"></script>
   <script src="js/modes/duel.js"></script>
   <script src="js/modes/single.js"></script>

@@ -3,7 +3,10 @@
  *  - fichiers du jeu : réseau d'abord (toujours la dernière version), cache si pas de connexion ;
  *  - polices Google : cache d'abord, mise à jour en arrière-plan.
  */
-const CACHE = 'qalleb-v2';
+const CACHE = 'qalleb-v3';
+const PLACES = ['bizerte', 'bulla-regia', 'carthage', 'chott-el-djerid', 'djerba', 'dougga', 'el-jem', 'ichkeul',
+  'kairouan', 'kerkouane', 'matmata', 'monastir', 'sbeitla', 'sidi-bou-said', 'tabarka', 'tataouine', 'testour',
+  'tozeur', 'tunis-avenue', 'zaghouan', 'zitouna'];
 const ASSETS = [
   './',
   'index.html',
@@ -22,11 +25,14 @@ const ASSETS = [
   'js/topics/sport.js',
   'js/topics/alghaz.js',
   'js/topics/amoureux.js',
+  'js/topics/_answers.js',
   'js/sound.js',
+  'js/answer.js',
   'js/core.js',
   'js/modes/duel.js',
   'js/modes/single.js',
   'js/app.js',
+  ...PLACES.map((p) => `img/places/${p}.jpg`),
 ];
 
 self.addEventListener('install', (event) => {

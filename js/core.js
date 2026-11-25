@@ -126,7 +126,15 @@ const Core = (() => {
     const base = { id: `${topic.id}-${i}`, topic: topic.name, emoji: topic.emoji, image: topic.image || null };
     return topic.type === 'love'
       ? { ...base, question: raw }
-      : { ...base, question: raw.q, answers: raw.a, correct: raw.c, fact: raw.f || '' };
+      : {
+        ...base,
+        question: raw.q,
+        answers: raw.a,
+        correct: raw.c,
+        fact: raw.f || '',
+        img: raw.img || null,       // photo (questions « 📍 وين هاذي ؟ »)
+        credit: raw.credit || '',  // auteur & licence de la photo
+      };
   }
 
   const quizTopics = () => TOPICS.filter((t) => t.type === 'quiz' && !t.mix);
@@ -155,7 +163,8 @@ const Core = (() => {
   // Le tirage prend d'abord les questions jamais vues, puis les plus anciennes.
   const SEEN_MAX = 5000;
   let seenCache = null;
-  const seenKey = (q) => hashString(q.question).toString(36); // indépendant de la position dans la liste
+  // Indépendant de la position dans la liste ; la photo distingue les questions « 📍 » au même texte
+  const seenKey = (q) => hashString(q.img ? `${q.question}|${q.img}` : q.question).toString(36);
 
   function seenData() {
     if (!seenCache) {
@@ -206,14 +215,29 @@ const Core = (() => {
     return out;
   }
 
-  function draw(topic, n) {
+  // typed : niveau صعيب → uniquement les questions qu'on peut corriger de façon fiable à l'écrit
+  function draw(topic, n, { typed = false } = {}) {
+    const pool = (t) => questionsOf(t).filter((q) => !typed || Answer.typable(q));
     const chosen = topic.mix
-      ? interleave(shuffle(quizTopics()).map((t) => freshest(questionsOf(t))), n)
-      : freshest(questionsOf(topic)).slice(0, n);
+      ? interleave(shuffle(quizTopics()).map((t) => freshest(pool(t))), n)
+      : freshest(pool(topic)).slice(0, n);
     return shuffle(chosen).map((q) => (q.answers ? shuffleAnswers(q) : q));
   }
 
   const countQuestions = (topic) => questionsOf(topic).length;
+
+  /* ---------- Niveaux ---------- */
+  const LEVELS = ['easy', 'medium', 'hard'];
+  const LEVEL_POINTS = { easy: 1, medium: 2, hard: 3 };
+  const isLevel = (l) => LEVELS.includes(l);
+  // Écrire prend du temps : +50 % au niveau صعيب (arrondi à 5 s)
+  const timeFor = (level, seconds) => (level === 'hard' && seconds ? Math.round((seconds * 1.5) / 5) * 5 : seconds);
+  // Indices des choix affichés : ساهل → la bonne réponse + 1 mauvaise
+  function choicesFor(q, level) {
+    const all = q.answers.map((_, i) => i);
+    if (level !== 'easy') return all;
+    return shuffle([q.correct, pickRandom(all.filter((i) => i !== q.correct))]);
+  }
 
   /* ---------- Cartes spéciales ---------- */
   // 🌶️ « حارّة » (visibles) : 2 points si bonne réponse ; 🧿 « خمسة » (cachée) : seconde chance
@@ -236,7 +260,7 @@ const Core = (() => {
     khamsa: (cards.find((c) => c.special === 'khamsa') || { index: -1 }).index,
   });
 
-  const pointsFor = (card) => (card.special === 'hot' ? 2 : 1);
+  const pointsFor = (card, level = 'medium') => (LEVEL_POINTS[level] || 2) * (card.special === 'hot' ? 2 : 1);
 
   const praise = (points, streak) => [pickRandom(L.bravo), L.plus(points), streak >= 3 ? L.streak(streak) : '']
     .filter(Boolean).join(' ');
@@ -411,13 +435,15 @@ const Core = (() => {
     c.disabled = true;
   }
 
-  function makeOption(tag, index, text) {
+  // index = position d'origine de la réponse (pour la correction) ; pos = rang affiché (lettre أ ب ج)
+  function makeOption(tag, index, text, pos = index) {
     const node = document.createElement(tag);
     node.className = 'opt';
+    node.dataset.i = String(index);
     if (tag === 'button') node.type = 'button';
     const letter = document.createElement('span');
     letter.className = 'letter';
-    letter.textContent = L.letters[index];
+    letter.textContent = L.letters[pos];
     const label = document.createElement('span');
     label.className = 'txt';
     label.textContent = text;
@@ -426,6 +452,20 @@ const Core = (() => {
   }
 
   /* ---------- Minuteur ---------- */
+  // Photo d'une question « 📍 » : <figure><img><figcaption> (auteur & licence obligatoires)
+  function fillFigure(figure, q) {
+    const img = figure.querySelector('img');
+    const caption = figure.querySelector('figcaption');
+    figure.hidden = !q.img;
+    if (!q.img) {
+      img.removeAttribute('src');
+      caption.textContent = '';
+      return;
+    }
+    img.src = q.img;
+    img.alt = '';
+    caption.textContent = q.credit ? `📷 ${q.credit}` : '';
+  }
   function createTimer({ onTick, onEnd }) {
     let id = null;
     let deadline = 0;
@@ -502,6 +542,7 @@ const Core = (() => {
     $, $$, shuffle, pickRandom, vibrate, restartAnim, showScreen, fillMedal, toast, store,
     later, clearLater, keepAwake, releaseWake,
     draw, countQuestions, markSeen, createCards, renderBoard, markCard, makeOption, createTimer,
+    LEVELS, isLevel, timeFor, choicesFor, fillFigure,
     randomLayout, layoutOf, pointsFor, praise, gridOf,
     dayKey, dayNumber, timeToMidnight, dailyDeck, deckFromIds, saveDaily, dailyStreak,
     encode, decode, link, share,

@@ -1264,6 +1264,109 @@ h1 {
 .confetti i.heart { width: auto; height: auto; font-size: 24px; }
 @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
 
+/* ================= Niveaux ================= */
+.level-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--sand);
+  border: 1px solid var(--line);
+}
+.level-switch button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.level-switch button[aria-pressed="true"] { background: #fff; box-shadow: 0 0 0 2px var(--ink), 0 6px 14px -8px rgba(20, 33, 61, 0.6); }
+.level-switch button[data-level="easy"][aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ok); }
+.level-switch button[data-level="medium"][aria-pressed="true"] { box-shadow: 0 0 0 2px var(--gold); }
+.level-switch button[data-level="hard"][aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ko); }
+.level-desc { font-size: 0.86rem; color: var(--muted); margin: 8px 0 14px; line-height: 1.6; }
+
+/* ---- Réponse écrite (صعيب) ---- */
+.typed { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.typed-input {
+  flex: 1 1 60%;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.1rem; /* ≥ 16px : pas de zoom automatique sur iPhone */
+  font-weight: 700;
+  outline: 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.typed-input:focus { border-color: var(--player, var(--blue)); box-shadow: 0 0 0 4px rgba(var(--blue-rgb), 0.15); }
+.typed-input:disabled { opacity: 0.6; }
+.typed .typed-go { flex: 0 0 auto; width: auto; margin: 0; padding: 12px 18px; font-size: 1rem; }
+.typed-hint { flex: 1 1 100%; font-size: 0.8rem; font-weight: 600; color: var(--muted); text-align: center; }
+.reveal { flex: none; text-align: center; font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+.reveal:empty { display: none; }
+.report-btn {
+  flex: none;
+  align-self: center;
+  padding: 2px 8px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.appeal {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: #F1EEFF;
+  border: 1px dashed #A28BE8;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #4B2E9E;
+}
+.appeal .btn { width: auto; margin: 0; padding: 8px 14px; font-size: 0.92rem; color: var(--ok); border-color: rgba(22, 163, 74, 0.35); }
+
+/* ---- Photo d'un lieu (questions « 📍 ») ---- */
+.q-figure { flex: none; margin: 0; border-radius: 14px; overflow: hidden; background: var(--sand); box-shadow: 0 6px 16px -10px rgba(20, 33, 61, 0.6); }
+.q-figure img { display: block; width: 100%; max-height: 34vh; object-fit: cover; }
+.q-figure figcaption { padding: 3px 8px; font-size: 0.62rem; color: var(--muted); direction: ltr; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q-figure figcaption:empty { display: none; }
+.zone .q-figure img { max-height: 15vh; }
+
+/* ---- Arbitre (صعيب en face à face) ---- */
+.judge-answer { text-align: center; font-weight: 800; color: var(--ok); background: #E7F7EE; border-radius: 12px; padding: 6px 10px; }
+.judge-answer:empty { display: none; }
+.judge { flex: none; display: flex; gap: 10px; margin-top: 8px; }
+.judge .btn { margin: 0; padding: 12px; font-size: 1.05rem; }
+.judge-yes { background: linear-gradient(180deg, #2DBE7B, var(--green) 55%, #146B45); box-shadow: 0 4px 0 #0E5134; }
+.judge-no { background: linear-gradient(180deg, #F5293D, var(--red) 55%, var(--red-dark)); box-shadow: 0 4px 0 #8E000B; }
+.judge .btn:not(:disabled):active { transform: translateY(3px); box-shadow: none; }
+.view-ask { flex-direction: column; }
+.say { flex: none; text-align: center; font-size: 1.05rem; font-weight: 800; color: var(--me); padding: 10px; border-radius: 14px; background: rgba(var(--me-rgb), 0.08); border: 2px dashed rgba(var(--me-rgb), 0.35); animation: pop-in 0.5s var(--ease-back); }
+
 /* ================= Accueil : défi du jour & partie rapide ================= */
 .daily {
   position: relative;

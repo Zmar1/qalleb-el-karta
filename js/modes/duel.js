@@ -2,6 +2,8 @@
  * Mode « وجه لوجه » — écran partagé, joueurs face à face.
  * Le répondeur choisit une carte et voit uniquement les choix (cliquables),
  * le questionneur voit la question + les choix (non cliquables) et lit à voix haute.
+ * Niveau صعيب : pas de choix ; le répondeur répond à voix haute et le questionneur,
+ * qui voit la bonne réponse, est l'arbitre (⚖️ ✅ / ❌).
  */
 const Duel = (() => {
   'use strict';
@@ -34,9 +36,16 @@ const Duel = (() => {
       qcard: $('.qcard', host),
       num: $('.qcard .num', host),
       category: $('.category', host),
+      hint: $('.hint', host),
       qText: $('.q-text', host),
       choices: $('.choices', host),
+      judgeAnswer: $('.judge-answer', host),
+      judge: $('.judge', host),
+      judgeYes: $('.judge-yes', host),
+      judgeNo: $('.judge-no', host),
       listen: $('.listen', host),
+      say: $('.say', host),
+      figures: $$('.q-figure', host),
       answers: $('.answers', host),
       timers: $$('.q-timer', host),
       banners: $$('.special-banner', host),
@@ -62,8 +71,10 @@ const Duel = (() => {
     cards: [],
     activeCard: null,
     phase: 'idle',    // idle | pick | picking | question | result | end
+    level: 'medium',  // easy | medium | hard
     timeLimit: 30,
   };
+  const isOral = () => state.level === 'hard';
 
   const timer = Core.createTimer({
     onTick(ratio, sec) {
@@ -75,7 +86,7 @@ const Duel = (() => {
         t.classList.toggle('low', low);
       }));
     },
-    onEnd: () => answer(-1),
+    onEnd: () => (isOral() ? verdict(false, true) : answer(-1)),
   });
 
   /* ---------- Affichage ---------- */
@@ -90,7 +101,7 @@ const Duel = (() => {
       z.name.textContent = me.name;
       const roleText = state.phase === 'end'
         ? L.duel.roleEnd
-        : answering ? L.duel.roleAnswer : L.duel.roleAsk;
+        : answering ? L.duel.roleAnswer : isOral() ? L.judge.role : L.duel.roleAsk;
       if (z.role.textContent !== roleText) {
         z.role.textContent = roleText;
         Core.restartAnim(z.role, 'pulse');
@@ -118,6 +129,9 @@ const Duel = (() => {
       z.feedback.className = 'feedback';
       z.fact.textContent = '';
       z.next.hidden = true;
+      z.judge.hidden = true;
+      z.judgeAnswer.textContent = '';
+      z.say.hidden = true;
     });
   }
 
@@ -133,9 +147,10 @@ const Duel = (() => {
   }
 
   /* ---------- Déroulement ---------- */
-  function start({ topic, names, timeLimit }) {
+  function start({ topic, names, timeLimit, level = 'medium' }) {
     state.topic = topic;
-    state.timeLimit = timeLimit;
+    state.level = Core.isLevel(level) ? level : 'medium';
+    state.timeLimit = Core.timeFor(state.level, timeLimit);
     state.players = names.map((name) => ({ name, score: 0, streak: 0 }));
     newGame();
   }
@@ -204,21 +219,31 @@ const Duel = (() => {
     const a = state.current;
     const qz = zones[1 - a];
     const az = zones[a];
+    const shown = isOral() ? [] : Core.choicesFor(q, state.level);
 
     qz.num.textContent = card.index + 1;
     qz.category.textContent = `${q.emoji} ${q.topic}`;
+    qz.hint.textContent = isOral() ? L.duel.hintOral : L.duel.hint;
     qz.qText.textContent = q.question;
     qz.choices.innerHTML = '';
-    q.answers.forEach((text, i) => qz.choices.appendChild(Core.makeOption('li', i, text)));
+    shown.forEach((i, pos) => qz.choices.appendChild(Core.makeOption('li', i, q.answers[i], pos)));
+    // ⚖️ صعيب : l'arbitre voit la bonne réponse
+    qz.judgeAnswer.textContent = isOral() ? L.judge.answer(q.answers[q.correct]) : '';
+    qz.judge.hidden = !isOral();
+    [qz.judgeYes, qz.judgeNo].forEach((b) => { b.disabled = true; });
     qz.qcard.classList.toggle('hot', card.special === 'hot');
     qz.qcard.classList.remove('flipped');
     setView(1 - a, 'ask');
 
-    az.listen.textContent = L.duel.listening(state.players[1 - a].name);
+    // Le répondeur voit la photo (questions « 📍 ») et les choix, ou la consigne orale
+    zones.forEach((z) => z.figures.forEach((f) => Core.fillFigure(f, q)));
+    az.listen.textContent = isOral() ? L.judge.listen(state.players[1 - a].name) : L.duel.listening(state.players[1 - a].name);
+    az.say.textContent = L.judge.say;
+    az.say.hidden = !isOral();
     az.answers.innerHTML = '';
     az.answers.classList.add('locked');
-    q.answers.forEach((text, i) => {
-      const b = Core.makeOption('button', i, text);
+    shown.forEach((i, pos) => {
+      const b = Core.makeOption('button', i, q.answers[i], pos);
       b.disabled = true;
       b.addEventListener('click', () => answer(i));
       az.answers.appendChild(b);
@@ -243,53 +268,76 @@ const Duel = (() => {
     Core.later(() => {
       az.answers.classList.remove('locked');
       $$('.opt', az.answers).forEach((b) => { b.disabled = false; });
+      [qz.judgeYes, qz.judgeNo].forEach((b) => { b.disabled = false; });
       timer.start(state.timeLimit);
     }, ANSWER_UNLOCK);
   }
 
+  // ساهل / متوسّط : le répondeur touche un choix
   function answer(choice) {
-    if (state.phase !== 'question') return;
+    if (state.phase !== 'question' || isOral()) return;
+    const card = state.activeCard;
+    const { q } = card;
+    const a = state.current;
+    const lists = [zones[1 - a].choices, zones[a].answers];
+    const isCorrect = choice === q.correct;
+    const timedOut = choice === -1;
+    const nodes = (list) => [...list.children];
+    const indexOf = (node) => Number(node.dataset.i);
 
+    if (!isCorrect && !timedOut && secondChance(card)) {
+      lists.forEach((list) => nodes(list).filter((n) => indexOf(n) === choice).forEach((n) => {
+        n.classList.add('wrong');
+        if (n.tagName === 'BUTTON') n.disabled = true;
+      }));
+      return;
+    }
+
+    lists.forEach((list) => nodes(list).forEach((n) => {
+      const i = indexOf(n);
+      if (n.tagName === 'BUTTON') n.disabled = true;
+      if (i === q.correct) n.classList.add('correct');
+      else if (i === choice) n.classList.add('wrong');
+      else if (!n.classList.contains('wrong')) n.classList.add('dim');
+    }));
+    resolve(isCorrect, timedOut);
+  }
+
+  // صعيب : l'arbitre (questionneur) tranche — ok = ✅, timedOut = temps écoulé
+  function verdict(ok, timedOut = false) {
+    if (state.phase !== 'question' || !isOral()) return;
+    const card = state.activeCard;
+    if (!ok && !timedOut && secondChance(card)) return;
+    zones[1 - state.current].judge.hidden = true;
+    resolve(ok, timedOut);
+  }
+
+  // 🧿 Khamsa : la 1ʳᵉ erreur est pardonnée, le minuteur continue
+  function secondChance(card) {
+    if (card.special !== 'khamsa' || card.chanceUsed) return false;
+    card.chanceUsed = true;
+    const az = zones[state.current];
+    const qz = zones[1 - state.current];
+    az.feedback.textContent = L.special.khamsaSave;
+    qz.feedback.textContent = L.special.khamsaOpp(state.players[state.current].name);
+    [az, qz].forEach((z) => { z.feedback.className = 'feedback lucky'; });
+    Sound.play('special');
+    Core.vibrate([30, 40, 30]);
+    return true;
+  }
+
+  function resolve(isCorrect, timedOut) {
+    state.phase = 'result';
+    timer.stop();
     const card = state.activeCard;
     const { q } = card;
     const a = state.current;
     const az = zones[a];
     const qz = zones[1 - a];
     const answerer = state.players[a];
-    const isCorrect = choice === q.correct;
-    const timedOut = choice === -1;
-    const lists = [qz.choices, az.answers];
-
-    // 🧿 Khamsa : la 1ʳᵉ erreur est pardonnée, le minuteur continue
-    if (!isCorrect && !timedOut && card.special === 'khamsa' && !card.chanceUsed) {
-      card.chanceUsed = true;
-      lists.forEach((list) => {
-        const node = list.children[choice];
-        node.classList.add('wrong');
-        if (node.tagName === 'BUTTON') node.disabled = true;
-      });
-      az.feedback.textContent = L.special.khamsaSave;
-      qz.feedback.textContent = L.special.khamsaOpp(answerer.name);
-      [az, qz].forEach((z) => { z.feedback.className = 'feedback lucky'; });
-      Sound.play('special');
-      Core.vibrate([30, 40, 30]);
-      return;
-    }
-
-    state.phase = 'result';
-    timer.stop();
-
-    lists.forEach((list) => {
-      [...list.children].forEach((node, i) => {
-        if (node.tagName === 'BUTTON') node.disabled = true;
-        if (i === q.correct) node.classList.add('correct');
-        else if (i === choice) node.classList.add('wrong');
-        else if (!node.classList.contains('wrong')) node.classList.add('dim');
-      });
-    });
 
     if (isCorrect) {
-      const points = Core.pointsFor(card);
+      const points = Core.pointsFor(card, state.level);
       answerer.score += points;
       answerer.streak += 1;
       az.feedback.textContent = Core.praise(points, answerer.streak);
@@ -298,7 +346,7 @@ const Duel = (() => {
       Core.vibrate(40);
     } else {
       answerer.streak = 0;
-      az.feedback.textContent = timedOut ? L.timeUp : L.wrong;
+      az.feedback.textContent = timedOut ? L.timeUp : isOral() ? L.typed.answer(q.answers[q.correct]) : L.wrong;
       qz.feedback.textContent = timedOut ? L.duel.noAnswer(answerer.name) : L.duel.missed(answerer.name);
       Sound.play(timedOut ? 'timeout' : 'wrong');
       Core.vibrate([60, 40, 60]);
@@ -306,6 +354,7 @@ const Duel = (() => {
     [az, qz].forEach((z) => { z.feedback.className = `feedback ${isCorrect ? 'ok' : 'ko'}`; });
     // Place libérée pour le bouton « كمّل » ; l'anecdote va au questionneur, qui la lit à voix haute
     setBanners();
+    az.say.hidden = true;
     qz.fact.textContent = q.fact ? L.fact(q.fact) : '';
 
     card.played = true;
@@ -359,6 +408,8 @@ const Duel = (() => {
   /* ---------- Événements ---------- */
   zones.forEach((z) => {
     z.next.addEventListener('click', finishTurn);
+    z.judgeYes.addEventListener('click', () => verdict(true));
+    z.judgeNo.addEventListener('click', () => verdict(false));
     z.replay.addEventListener('click', () => { Sound.unlock(); newGame(); });
     z.menu.addEventListener('click', () => App.home());
   });
