@@ -1354,7 +1354,11 @@ h1 {
 .q-figure img { display: block; width: 100%; max-height: 34vh; object-fit: cover; }
 .q-figure figcaption { padding: 3px 8px; font-size: 0.62rem; color: var(--muted); direction: ltr; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .q-figure figcaption:empty { display: none; }
-.zone .q-figure img { max-height: 15vh; }
+.zone .q-figure img { max-height: 11vh; }
+/* Écran partagé : le contenu défile au lieu de passer sous le bouton « كمّل » */
+.zone .view-answer, .zone .view-ask { overflow-y: auto; overscroll-behavior: contain; }
+.zone .view-answer .q-figure figcaption { display: none; } /* crédit affiché chez le questionneur */
+.zone .feedback, .zone .fact, .zone .next { position: relative; z-index: 1; }
 
 /* ---- Arbitre (صعيب en face à face) ---- */
 .judge-answer { text-align: center; font-weight: 800; color: var(--ok); background: #E7F7EE; border-radius: 12px; padding: 6px 10px; }

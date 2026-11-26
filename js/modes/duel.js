@@ -355,6 +355,7 @@ const Duel = (() => {
     // Place libérée pour le bouton « كمّل » ; l'anecdote va au questionneur, qui la lit à voix haute
     setBanners();
     az.say.hidden = true;
+    az.figures.forEach((f) => { f.hidden = true; }); // place pour le résultat et « كمّل »
     qz.fact.textContent = q.fact ? L.fact(q.fact) : '';
 
     card.played = true;

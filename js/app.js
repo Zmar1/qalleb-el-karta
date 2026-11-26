@@ -30,7 +30,6 @@ const App = (() => {
     dailyTitle: $('#daily-title'),
     dailyStatus: $('#daily-status'),
     dailyStreak: $('#daily-streak'),
-    quickBtn: $('#quick-btn'),
     installBtn: $('#install-btn'),
     helpBtn: $('#help-btn'),
     help: $('#help'),
@@ -385,13 +384,6 @@ const App = (() => {
     openDaily();
   });
 
-  // ⚡ Une partie en un seul toucher : solo, « خلطة », dernier nom et dernier niveau utilisés
-  el.quickBtn.addEventListener('click', () => {
-    Sound.unlock();
-    Sound.play('pick');
-    const name = (loadNames(false)[0] || '').trim() || L.defaultNames.p(1);
-    Single.start({ mode: 'solo', topic: MIX, names: [name], timeLimit: savedTimer(), level });
-  });
 
   /* ---------- Aide ---------- */
   function renderHelp() {

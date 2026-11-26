@@ -195,6 +195,7 @@ const Single = (() => {
     state.activeCard = card;
     card.el.classList.add('picked');
     Core.markSeen(card.q);
+    saveDailyProgress(); // تحدّي اليوم : dès la 1ʳᵉ carte, la partie compte
     Sound.play('pick');
     Core.vibrate(15);
     Core.later(() => openCard(card), PICK_DELAY);
@@ -409,6 +410,7 @@ const Single = (() => {
     card.played = true;
     card.correct = isCorrect;
     card.by = state.current;
+    saveDailyProgress();
     updateHeader();
     el.next.hidden = false;
     // Petits écrans : le bouton « كمّل » reste visible même avec l'anecdote
@@ -494,6 +496,14 @@ const Single = (() => {
   }
 
   /* ---------- Fin de partie ---------- */
+  // تحدّي اليوم : résultat enregistré à chaque carte → quitter en cours fige le score jusqu'à demain
+  function saveDailyProgress() {
+    if (kind() !== 'daily') return;
+    const p = state.players[0];
+    Core.saveDaily(state.context.key, {
+      name: p.name, score: p.score, correct: p.correct, total: state.cards.length, grid: Core.gridOf(state.cards),
+    });
+  }
   function addEndRow(cls, name, value) {
     const row = document.createElement('div');
     row.className = `end-row ${cls}`;

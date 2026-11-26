@@ -16,7 +16,6 @@ des cartes face cachée, on en touche une, elle se retourne et révèle une ques
 | 🗣️ **كمّل المثل** | Nouveau thème : compléter des **proverbes tunisiens**, avec leur sens expliqué. |
 | 💡 **تعرفشي؟** | Une anecdote s'affiche après la réponse (thème Tunisie, proverbes). |
 | 🔥 **Séries** | « 🔥 3 متتاليين! » après 3 bonnes réponses d'affilée ; « شكبّة! 🃏 » pour un 10/10. |
-| ⚡ **إلعب توّا** | Une partie en un seul toucher depuis l'accueil. |
 | ❓ **Aide intégrée** | Explication illustrée à la 1ʳᵉ visite (et via le bouton ؟). |
 | 📴 **Hors ligne** | Installable comme une appli, **fonctionne sans Internet** (service worker). |
 
@@ -58,8 +57,11 @@ l'ami joue au même niveau que toi.
 `js/answer.js` compare la saisie à la bonne réponse et à ses variantes (`js/topics/_answers.js`) :
 - **normalisation** : hamza (أ إ آ), ة/ه, ى/ي, voyelles et chadda, article « ال », lettres ڨ/ڤ, accents et articles
   français (le, la, l', de…), chiffres arabes ٠-٩, ordre des mots (« أصفر و أحمر » = « أحمر و أصفر ») ;
-- **1 à 2 fautes tolérées** : aucune jusqu'à 3 lettres, 1 faute de 4 à 6 lettres, 2 au-delà (une inversion de deux
-  lettres compte pour une seule faute) ;
+- **fautes tolérées** : 1 faute jusqu'à 4 lettres, 2 de 5 à 8, 3 au-delà (une inversion de deux lettres = 1 faute) ;
+- **le sens compte** : une courte phrase qui contient la réponse (« هو بورقيبة », « c'est Carthage ») ; un mot
+  distinctif d'un nom (« هوغو » pour « فيكتور هوغو ») ; et **arabe ↔ français par la prononciation**
+  (« Monastir » = « المنستير », « Gibran » = « جبران ») même sans variante écrite à l'avance ;
+- « X ولا Y » / « X ou Y » (deux réponses à la fois) est refusé ;
 - **nombres exacts** : 1956 ≠ 1957 (l'unité est facultative : « 42,195 km » = « 42.195 كم ») ;
 - **3 garde-fous** : une saisie aussi proche d'un mauvais choix que de la bonne réponse est refusée ; une saisie
   approximative qui est exactement **une autre réponse connue du jeu** est refusée (« طيّارة » ≠ « سيّارة ») ;
@@ -132,7 +134,8 @@ Photos libres de Wikimedia Commons, redimensionnées (~45 Ko), disponibles hors 
 
 ### 🗓️ تحدّي اليوم — Défi du jour
 Grande tuile en haut de l'accueil. 10 questions tirées de tous les thèmes, **identiques pour tous** le même jour
-(tirage reproductible à partir de la date), minuteur fixe de 30 s, une seule tentative.
+(tirage reproductible à partir de la date), minuteur fixe de 30 s, **une seule tentative qui compte dès la
+1ʳᵉ carte retournée** : quitter en cours fige le score (cartes non jouées ⬜) jusqu'au lendemain.
 À la fin : grille d'emojis, série de jours 🔥, compte à rebours jusqu'au prochain défi et bouton **📤 شارك نتيجتك**.
 Le lien partagé (`…/#daily`) ouvre directement le défi.
 

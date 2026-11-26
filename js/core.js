@@ -267,7 +267,7 @@ const Core = (() => {
 
   // Grille d'emojis à partager (une case par carte)
   const gridOf = (cards) => cards
-    .map((c) => (!c.correct ? '🟥' : c.special === 'hot' ? '🌶️' : c.chanceUsed ? '🧿' : '🟩'))
+    .map((c) => (!c.played ? '⬜' : !c.correct ? '🟥' : c.special === 'hot' ? '🌶️' : c.chanceUsed ? '🧿' : '🟩'))
     .join('');
 
   /* ---------- Paquets prédéfinis : défi du jour & liens de défi ---------- */
