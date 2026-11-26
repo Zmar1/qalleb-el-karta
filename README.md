@@ -27,12 +27,12 @@ des cartes face cachée, on en touche une, elle se retourne et révèle une ques
 - Thème **للمحبّين** en rose bougainvillier 🌸, cartes **حارّة** couleur harissa 🌶️
 - Polices arabes : **Reem Kufi** (titres, style coufique) et **Cairo** (textes) — interface **RTL**
 
-## 🗂️ Thèmes (المواضيع) — 673 questions
+## 🗂️ Thèmes (المواضيع) — 738 questions
 
 | Thème | Questions | Type | Modes |
 |---|---|---|---|
 | 🇹🇳 **تونس** (mis en avant) | 95 dont 21 photos + anecdotes | Histoire, lieux, cuisine, traditions, culture, derja | وحدي · جماعة · وجه لوجه |
-| 🕌 **ديني** (nouveau) | 58 + explications | Piliers, prière, ablutions, jeûne, zakat, hajj, Coran, sîra, bonnes manières du quotidien | وحدي · جماعة · وجه لوجه |
+| 🕌 **ديني** (nouveau) | 123 + explications | Piliers, prière, ablutions, jeûne, zakat, hajj, Coran, prophètes, invocations du quotidien (sommeil, voyage, pluie, colère…), bonnes habitudes et comportement | وحدي · جماعة · وجه لوجه |
 | 🗣️ **كمّل المثل** | 38 + sens | Compléter un proverbe tunisien | وحدي · جماعة · وجه لوجه |
 | 🧠 ثقافة عامّة | 63 | Littérature, art, histoire, maths, monde moderne | وحدي · جماعة · وجه لوجه |
 | 🌍 جغرافيا | 70 | Capitales, records, fleuves, drapeaux, monuments | وحدي · جماعة · وجه لوجه |
