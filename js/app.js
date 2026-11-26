@@ -96,25 +96,37 @@ const App = (() => {
       tile.style.setProperty('--c2', t.colors[1]);
       tile.style.animationDelay = `${i * 70}ms`;
 
-      const medal = document.createElement('span');
-      medal.className = 'tile-medal';
-      Core.fillMedal(medal, t);
+      const span = (cls, txt) => {
+        const s = document.createElement('span');
+        s.className = cls;
+        if (txt !== undefined) s.textContent = txt;
+        return s;
+      };
+      const total = Core.countQuestions(t);
+      const seen = Core.seenCount(t);
+      const best = store.get(`best.${t.id}`, null);
 
-      const text = document.createElement('span');
-      text.className = 'tile-text';
-      const name = document.createElement('span');
-      name.className = 'tile-name';
-      name.textContent = t.name;
-      const desc = document.createElement('span');
-      desc.className = 'tile-desc';
-      desc.textContent = t.description;
-      const badge = document.createElement('span');
-      badge.className = 'tile-badge';
-      badge.textContent = t.type === 'love'
-        ? L.loveBadge(Core.countQuestions(t))
-        : L.questionsBadge(Core.countQuestions(t), store.get(`best.${t.id}`, null));
-      text.append(name, desc, badge);
-      tile.append(medal, text);
+      const art = span('tile-art', t.emoji); // grand emoji en filigrane (décor)
+      art.setAttribute('aria-hidden', 'true');
+      const medal = span('tile-medal');
+      Core.fillMedal(medal, t);
+      const go = span('tile-go', '←');
+      go.setAttribute('aria-hidden', 'true');
+      const top = span('tile-top');
+      top.append(medal, go);
+
+      const meta = span('tile-meta');
+      meta.append(span('tile-chip', t.type === 'love' ? L.loveBadge(total) : L.tileCount(total)));
+      if (best !== null && t.type !== 'love') meta.append(span('tile-chip gold', L.tileBest(best)));
+      // Progression : part des questions de ce thème déjà découvertes
+      const progress = span('tile-progress');
+      progress.style.setProperty('--p', `${Math.round((seen / Math.max(1, total)) * 100)}%`);
+      progress.appendChild(document.createElement('i'));
+
+      const text = span('tile-text');
+      text.append(span('tile-name', t.name), span('tile-desc', t.description), meta, progress);
+      tile.append(art, top, text);
+      tile.setAttribute('aria-label', `${t.name} — ${t.description} — ${L.tileSeen(seen, total)}`);
 
       tile.addEventListener('click', () => {
         Sound.unlock();

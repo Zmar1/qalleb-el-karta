@@ -225,6 +225,11 @@ const Core = (() => {
   }
 
   const countQuestions = (topic) => questionsOf(topic).length;
+  // Questions d'un thème déjà découvertes (barre de progression des tuiles de l'accueil)
+  const seenCount = (topic) => {
+    const { m } = seenData();
+    return questionsOf(topic).filter((q) => m[seenKey(q)]).length;
+  };
 
   /* ---------- Niveaux ---------- */
   const LEVELS = ['easy', 'medium', 'hard'];
@@ -541,7 +546,7 @@ const Core = (() => {
   return {
     $, $$, shuffle, pickRandom, vibrate, restartAnim, showScreen, fillMedal, toast, store,
     later, clearLater, keepAwake, releaseWake,
-    draw, countQuestions, markSeen, createCards, renderBoard, markCard, makeOption, createTimer,
+    draw, countQuestions, seenCount, markSeen, createCards, renderBoard, markCard, makeOption, createTimer,
     LEVELS, isLevel, timeFor, choicesFor, fillFigure,
     randomLayout, layoutOf, pointsFor, praise, gridOf,
     dayKey, dayNumber, timeToMidnight, dailyDeck, deckFromIds, saveDaily, dailyStreak,
