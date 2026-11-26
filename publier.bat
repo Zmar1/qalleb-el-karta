@@ -8,6 +8,10 @@ if errorlevel 1 goto nogit
 
 if not exist ".git" git init -b main >nul
 
+rem Les commits de ce depot sont toujours signes Zmar1 (jamais l'identite Git du travail)
+git config user.name "Zmar1"
+git config user.email "marwen1.zarrouki@gmail.com"
+
 git remote get-url origin >nul 2>&1
 if not errorlevel 1 goto push
 
