@@ -49,7 +49,6 @@ TOPICS.push({
   name: 'كمّل المثل',
   emoji: '🗣️',
   featured: true,
-  ribbon: 'جديد ✨',
   description: 'أمثال تونسية: تعرف كيفاش يكمّلو؟',
   colors: ['#8AA63E', '#55702A'],
   type: 'quiz',

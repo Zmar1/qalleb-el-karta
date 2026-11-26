@@ -24,6 +24,7 @@ const ASSETS = [
   'js/topics/cinema-musique.js',
   'js/topics/sport.js',
   'js/topics/alghaz.js',
+  'js/topics/din.js',
   'js/topics/amoureux.js',
   'js/topics/_answers.js',
   'js/sound.js',

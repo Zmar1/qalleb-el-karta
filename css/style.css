@@ -1797,6 +1797,49 @@ body {
 }
 @media (max-width: 340px) { .topic-grid { grid-template-columns: 1fr; } }
 
+/* ---- Défi du jour v2 : même famille que les tuiles ---- */
+.daily {
+  overflow: hidden;
+  isolation: isolate;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 28px;
+  background:
+    radial-gradient(130% 90% at 100% 0%, rgba(255, 255, 255, 0.32), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.16' stroke-width='1.6'%3E%3Crect x='24' y='24' width='24' height='24'/%3E%3Crect x='24' y='24' width='24' height='24' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(155deg, #F7B23B, #E8721C 55%, #C2410C);
+  box-shadow: 0 18px 34px -20px #C2410C, inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.daily.done {
+  background:
+    radial-gradient(130% 90% at 100% 0%, rgba(255, 255, 255, 0.32), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.16' stroke-width='1.6'%3E%3Crect x='24' y='24' width='24' height='24'/%3E%3Crect x='24' y='24' width='24' height='24' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(155deg, #34B27B, var(--green) 55%, #136B45);
+  box-shadow: 0 18px 34px -20px #136B45, inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.daily::before { content: none; }
+.daily:active { transform: scale(0.98); }
+.daily-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.94);
+  transform: rotate(-4deg);
+}
+.daily .tile-art { font-size: 6rem; }
+.daily-title { font-size: 1.45rem; }
+.daily-status {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 0.78rem;
+}
+.daily-streak { background: rgba(242, 193, 78, 0.95); color: var(--ink); }
+@media (hover: hover) { .daily:hover .tile-go { transform: translateX(-4px); background: rgba(255, 255, 255, 0.36); } }
+
 /* ================= Accessibilité ================= */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
