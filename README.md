@@ -221,8 +221,14 @@ publier.bat              → publication sur GitHub Pages (branche main) ; sur u
    les **mêmes identifiants** : les liens « تحدّى صاحبك » déjà envoyés restent valables).
 4. **Authentication → Users → Add user → Create new user** : ton e-mail + un mot de passe solide, coche
    **Auto Confirm User**. Puis dans **SQL Editor**, exécute `supabase/3-admin.sql` en y mettant ton e-mail.
-5. **Project Settings → API** (ou **API Keys**) : copie l'**URL du projet** et la clé publique (**anon** ou
-   **publishable**) dans `js/config.js`. ⛔ Jamais la clé `service_role` / `secret`.
+5. Remplis `js/config.js` :
+   - `supabaseUrl` : `https://<Project ID>.supabase.co` (Project ID dans **Project Settings → General**, ou dans
+     l'adresse du tableau de bord `supabase.com/dashboard/project/<Project ID>`) ;
+   - `supabasePublishableKey` : **Project Settings → API Keys → Publishable key** (`sb_publishable_…`).
+
+   ⛔ **Jamais une « Secret key »** (`sb_secret_…`) ni `service_role` : elle donnerait tous les droits sur la base à
+   n'importe qui (le jeu et l'admin refusent de démarrer avec). Si une clé secrète a été publiée par erreur,
+   supprime-la dans **API Keys** et crées-en une autre.
 6. Ouvre `admin.html` (en local avec `npx serve .`, ou en ligne `https://…/admin.html`) et connecte-toi.
 
 ### Au quotidien : la page admin

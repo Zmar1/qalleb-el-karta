@@ -54,10 +54,12 @@ function catalogOf(topicRows, questionRows, version) {
 }
 
 // Bac à sable « navigateur » minimal + scripts du jeu dans l'ordre de index.html
-function sandbox({ configured, storage = {}, fetch = null }) {
+function sandbox({ configured, storage = {}, fetch = null, url = BASE, key = KEY }) {
   const store = new Map(Object.entries(storage));
+  const logs = [];
   const context = {
-    console, setTimeout, clearTimeout, setInterval, clearInterval, AbortController, TextEncoder, TextDecoder, btoa, atob,
+    console: { ...console, error: (...args) => logs.push(args.join(' ')) },
+    setTimeout, clearTimeout, setInterval, clearInterval, AbortController, TextEncoder, TextDecoder, btoa, atob,
     document: { querySelector: () => ({}), querySelectorAll: () => [], addEventListener() {}, visibilityState: 'visible' },
     navigator: { onLine: true },
     localStorage: {
@@ -73,12 +75,16 @@ function sandbox({ configured, storage = {}, fetch = null }) {
   ['js/lang.js', 'js/config.js', ...topicFiles(), 'js/data.js', 'js/answer.js', 'js/core.js'].forEach((file) => {
     let src = fs.readFileSync(path.join(ROOT, file), 'utf8');
     if (file === 'js/config.js' && configured) {
-      src = src.replace("supabaseUrl: ''", `supabaseUrl: '${BASE}'`).replace("supabaseAnonKey: ''", `supabaseAnonKey: '${KEY}'`);
+      ["supabaseUrl: ''", "supabasePublishableKey: ''"].forEach((field) => {
+        if (!src.includes(field)) throw new Error(`js/config.js : champ « ${field} » introuvable`);
+      });
+      src = src.replace("supabaseUrl: ''", `supabaseUrl: '${url}'`)
+        .replace("supabasePublishableKey: ''", `supabasePublishableKey: '${key}'`);
     }
     vm.runInContext(src, context, { filename: file });
   });
   const run = (code) => vm.runInContext(code, context);
-  return { context, store, run };
+  return { context, store, run, logs };
 }
 
 const topicsSignature = (s) => s.run(`TOPICS.filter((t) => !t.mix).map((t) => [t.id, t.name, t.emoji, t.type,
@@ -219,6 +225,39 @@ async function main() {
   assert.strictEqual(live.run("TOPICS.find((t) => t.id === 'tunisie').questions.length"), 96);
   console.log('✅ Catalogue vide ou abîmé ignoré : le jeu garde ses questions');
 
+  /* ---------- 6. Clés : secrète refusée, publishable sans en-tête Authorization ---------- */
+  const jwt = (role) => `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ iss: 'supabase', role })).toString('base64url')}.signature`;
+  for (const secretKey of ['sb_secret_AbCdEfGhIjKlMnOpQrStUvWx', jwt('service_role')]) {
+    let fetched = 0;
+    const s = sandbox({
+      configured: true, key: secretKey, storage: cached, fetch: async () => { fetched += 1; throw new Error('x'); },
+    });
+    assert.strictEqual(s.run('Data.enabled'), false, 'clé secrète : base désactivée');
+    assert.strictEqual(s.run('Data.source'), 'bundle', 'clé secrète : questions intégrées');
+    assert.strictEqual(await s.run('Data.refresh({ force: true })'), false);
+    assert.strictEqual(s.run("Data.report('tunisie-1', 'x')"), false);
+    assert.strictEqual(fetched, 0, 'clé secrète : aucun appel réseau');
+    assert.ok(s.logs.some((l) => l.includes('SECRÈTE')), 'clé secrète : alerte dans la console');
+  }
+  const seenCalls = [];
+  const pub = sandbox({
+    configured: true,
+    url: 'https://supabase.com/dashboard/project/abcdefghijklmnop/settings/api-keys',
+    key: 'sb_publishable_AbCdEfGhIjKlMnOpQrStUvWx',
+    fetch: async (url, opts) => {
+      seenCalls.push({ url, headers: opts.headers });
+      return { ok: true, status: 200, text: async () => JSON.stringify({ version: 1, unchanged: true }) };
+    },
+  });
+  assert.strictEqual(pub.run('Data.enabled'), true);
+  await pub.run('Data.refresh({ force: true })');
+  assert.strictEqual(seenCalls[0].url, 'https://abcdefghijklmnop.supabase.co/rest/v1/rpc/game_catalog', 'adresse du tableau de bord corrigée');
+  assert.strictEqual(seenCalls[0].headers.apikey, 'sb_publishable_AbCdEfGhIjKlMnOpQrStUvWx');
+  assert.strictEqual(seenCalls[0].headers.Authorization, undefined, 'pas d\'en-tête Authorization avec une Publishable key');
+  assert.strictEqual(sandbox({ configured: true, key: jwt('anon') }).run('Data.enabled'), true, 'ancienne clé anon acceptée');
+  assert.strictEqual(sandbox({ configured: true, url: 'https://abc.supabase.co/rest/v1/' }).run('Data.enabled'), true);
+  console.log('✅ Clés : Secret key et service_role refusées (aucun appel), Publishable key OK, adresse du tableau de bord corrigée');
+
   console.log('\n🎉 Tout est bon.');
 }
 
@@ -230,5 +269,7 @@ if (require.main === module) {
 }
 
 module.exports = { catalogOf };
+
+
 
 

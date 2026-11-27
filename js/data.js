@@ -25,15 +25,37 @@ const Data = (() => {
   const FALLBACK_COLORS = ['#0E5AA7', '#083D77'];
 
   const conf = typeof CONFIG === 'object' && CONFIG ? CONFIG : {};
-  const base = String(conf.supabaseUrl || '').trim().replace(/\/+$/, '');
-  const key = String(conf.supabaseAnonKey || '').trim();
-  const enabled = /^https:\/\/[^\s/]+/.test(base) && key.length > 20;
+  const base = apiUrl(conf.supabaseUrl);
+  const key = String(conf.supabasePublishableKey || conf.supabaseAnonKey || '').trim();
+  const secret = isSecretKey(key);
+  const enabled = !secret && /^https:\/\/[^\s/]+$/.test(base) && key.length > 20;
+  if (secret) {
+    console.error('⛔ js/config.js contient une clé SECRÈTE : base de données désactivée. '
+      + 'Mets la « Publishable key » (sb_publishable_…) et supprime cette clé secrète dans Supabase si elle a été publiée.');
+  }
 
   const listeners = [];
   let current = { source: 'bundle', version: null, count: 0 };
   let lastCheck = 0;
   let checking = null;
   let flushing = null;
+
+  /* ---------- Configuration ---------- */
+  // Adresse de l'API : accepte aussi l'adresse du tableau de bord (supabase.com/dashboard/project/<id>/…)
+  function apiUrl(url) {
+    const u = String(url || '').trim().replace(/\/+$/, '');
+    const dashboard = u.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+    return dashboard ? `https://${dashboard[1]}.supabase.co` : u.replace(/\/(rest|auth|storage)\/v1(\/.*)?$/i, '');
+  }
+
+  // Clé secrète (sb_secret_…) ou ancienne clé service_role : elle ne doit JAMAIS être dans le jeu
+  function isSecretKey(k) {
+    if (/^sb_secret_/i.test(k)) return true;
+    try {
+      const payload = (k.split('.')[1] || '').replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(payload)).role === 'service_role';
+    } catch (_) { return false; }
+  }
 
   /* ---------- Stockage local ---------- */
   function read(k, fallback) {
@@ -248,5 +270,6 @@ const Data = (() => {
     get version() { return current.version; },
   };
 })();
+
 
 

@@ -40,7 +40,8 @@
           <li>Crée un projet gratuit sur <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com</a> (région Europe).</li>
           <li><b>SQL Editor</b> : exécute <code>supabase/1-schema.sql</code>, puis <code>supabase/2-seed.sql</code>.</li>
           <li><b>Authentication → Users → Add user</b> (ton e-mail + un mot de passe), puis exécute <code>supabase/3-admin.sql</code> avec ton e-mail.</li>
-          <li><b>Project Settings → API</b> : copie l'URL du projet et la clé publique (<i>anon</i> ou <i>publishable</i>) dans <code>js/config.js</code>.</li>
+          <li><b>Project Settings → API Keys</b> : copie la <b>Publishable key</b> (<code>sb_publishable_…</code>) dans <code>js/config.js</code>,
+            avec l'URL <code>https://&lt;Project ID&gt;.supabase.co</code>. ⛔ Jamais une <i>Secret key</i>.</li>
           <li>Recharge cette page.</li>
         </ol>
         <p class="muted">Tous les détails : README, section « 🗄️ Base de données ».</p>
@@ -249,6 +250,7 @@
   <script src="js/admin.js"></script>
 </body>
 </html>
+
 
 
 

@@ -138,10 +138,34 @@
   /* =====================================================================
      Connexion
      ===================================================================== */
+  // Adresse de l'API : accepte aussi l'adresse du tableau de bord (supabase.com/dashboard/project/<id>/…)
+  function apiUrl(url) {
+    const u = String(url || '').trim().replace(/\/+$/, '');
+    const dashboard = u.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+    return dashboard ? `https://${dashboard[1]}.supabase.co` : u.replace(/\/(rest|auth|storage)\/v1(\/.*)?$/i, '');
+  }
+
+  // Clé secrète (sb_secret_…) ou ancienne clé service_role : elle ne doit JAMAIS être dans config.js
+  function isSecretKey(k) {
+    if (/^sb_secret_/i.test(k)) return true;
+    try {
+      const payload = (k.split('.')[1] || '').replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(payload)).role === 'service_role';
+    } catch (_) { return false; }
+  }
+
   async function init() {
-    const url = String(conf.supabaseUrl || '').trim();
-    const key = String(conf.supabaseAnonKey || '').trim();
-    if (!/^https:\/\//.test(url) || key.length < 20) {
+    const url = apiUrl(conf.supabaseUrl);
+    const key = String(conf.supabasePublishableKey || conf.supabaseAnonKey || '').trim();
+    if (isSecretKey(key)) {
+      $('#setup-error').textContent = '⛔ js/config.js contient une clé SECRÈTE (« Secret key » sb_secret_… ou service_role) : '
+        + "elle donnerait tous les droits sur ta base à n'importe qui. Remplace-la par la « Publishable key » "
+        + '(sb_publishable_…). Si la clé secrète a déjà été publiée sur GitHub, supprime-la dans Supabase → API Keys.';
+      show('setup');
+      return;
+    }
+    if (!/^https:\/\/[^\s/]+$/.test(url) || key.length < 20) {
+      if (url || key) $('#setup-error').textContent = "js/config.js : l'URL (https://<Project ID>.supabase.co) ou la clé semble incomplète.";
       show('setup');
       return;
     }
@@ -900,6 +924,7 @@
 
   init();
 })();
+
 
 
 
