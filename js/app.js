@@ -156,6 +156,8 @@ const App = (() => {
     special = null;
     renderTopics();
     renderDaily();
+    Social.renderHome();
+    Social.syncDaily(); // défi du jour (même abandonné en cours) → classement
     Core.showScreen('screen-home');
   }
 
@@ -475,6 +477,10 @@ const App = (() => {
       openChallenge(hash.slice(3));
       return true;
     }
+    if (hash === '#rank') {
+      Social.openRanking('daily');
+      return true;
+    }
     return false;
   }
 
@@ -484,6 +490,7 @@ const App = (() => {
   renderDaily();
   renderHelp();
   Core.updateSoundButtons();
+  Social.init(); // avant handleLink : récupère d'abord le retour de Google (#access_token=…)
 
   const linked = handleLink();
   if (!linked && !store.get('helpSeen', false)) openHelp();

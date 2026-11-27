@@ -79,6 +79,17 @@
         <span class="tile-go" aria-hidden="true">←</span>
       </button>
 
+      <!-- Classements & compte joueur (masqués sans base de données) -->
+      <div id="social-row" class="social-row" hidden>
+        <button type="button" id="ranking-btn" class="quick-btn social-btn">
+          <span class="social-ico" aria-hidden="true">🏆</span><span id="ranking-label"></span>
+        </button>
+        <button type="button" id="account-btn" class="quick-btn social-btn">
+          <span id="account-avatar" class="social-ico" aria-hidden="true">👤</span>
+          <span class="social-text"><span id="account-label"></span><small id="account-level"></small></span>
+        </button>
+      </div>
+
       <button type="button" id="install-btn" class="install-btn" hidden>📲 نزّل اللعبة على تليفونك · تخدم بلاش إنترنت</button>
 
       <p class="home-pick">ولا إختار موضوع 👇</p>
@@ -264,10 +275,29 @@
       <div id="end-scores" class="end-scores"></div>
       <p id="end-grid" class="end-grid" hidden></p>
       <p id="end-next" class="end-next" hidden></p>
+      <p id="end-rank" class="end-rank" aria-live="polite" hidden></p>
       <button type="button" id="end-share" class="btn share" hidden></button>
+      <button type="button" id="end-social" class="btn ghost social-cta" hidden></button>
       <button type="button" id="end-replay" class="btn primary">🔁 عاود</button>
       <button type="button" id="end-menu" class="btn ghost">🏠 بدّل الموضوع</button>
       <p id="end-quote" class="end-quote"></p>
+    </div>
+  </section>
+
+  <!-- ================= Classements ================= -->
+  <section id="screen-ranking" class="screen">
+    <div class="panel ranking-panel">
+      <button type="button" id="ranking-back" class="back-btn"></button>
+      <h1 id="ranking-title"></h1>
+      <div id="ranking-tabs" class="mode-switch ranking-tabs" role="tablist">
+        <button type="button" data-tab="daily" role="tab"><span aria-hidden="true">🗓️</span><b></b></button>
+        <button type="button" data-tab="week" role="tab"><span aria-hidden="true">📅</span><b></b></button>
+        <button type="button" data-tab="gov" role="tab"><span aria-hidden="true">🇹🇳</span><b></b></button>
+      </div>
+      <p id="ranking-sub" class="mode-desc"></p>
+      <ol id="ranking-list" class="ranking-list" aria-live="polite"></ol>
+      <p id="ranking-me" class="ranking-me" hidden></p>
+      <button type="button" id="ranking-join" class="btn primary" hidden></button>
     </div>
   </section>
 
@@ -277,6 +307,66 @@
       <h2 id="help-title" class="sheet-title"></h2>
       <ol id="help-steps" class="help-steps"></ol>
       <button type="button" id="help-close" class="btn primary"></button>
+    </div>
+  </div>
+
+  <!-- ================= Compte joueur ================= -->
+  <div id="account" class="sheet" hidden>
+    <div class="sheet-card account-card" role="dialog" aria-modal="true" aria-labelledby="acc-title">
+      <button type="button" id="acc-close" class="icon-btn sheet-close" aria-label="سكّر">✕</button>
+      <h2 id="acc-title" class="sheet-title"></h2>
+
+      <div class="acc-view" data-view="signin">
+        <p id="acc-lead" class="acc-lead"></p>
+        <form id="acc-email-form" class="acc-form" novalidate>
+          <div class="field"><input id="acc-email" type="email" inputmode="email" autocomplete="email" dir="ltr" maxlength="120" aria-label="Email"></div>
+          <button type="submit" id="acc-send" class="btn primary"></button>
+        </form>
+        <div id="acc-google-box" hidden>
+          <p class="acc-or"><span id="acc-or"></span></p>
+          <button type="button" id="acc-google" class="btn google"><span class="g" aria-hidden="true">G</span><span id="acc-google-label"></span></button>
+        </div>
+      </div>
+
+      <div class="acc-view" data-view="code" hidden>
+        <p id="acc-code-lead" class="acc-lead"></p>
+        <form id="acc-code-form" class="acc-form" novalidate>
+          <div class="field"><input id="acc-code" class="code-input" inputmode="numeric" autocomplete="one-time-code" dir="ltr" maxlength="10" aria-label="Code"></div>
+          <button type="submit" id="acc-verify" class="btn primary"></button>
+        </form>
+        <div class="acc-links">
+          <button type="button" id="acc-resend" class="link-btn"></button>
+          <button type="button" id="acc-change" class="link-btn"></button>
+        </div>
+      </div>
+
+      <div class="acc-view" data-view="profile" hidden>
+        <form id="acc-profile-form" class="acc-form" novalidate>
+          <div class="field"><input id="acc-pseudo" maxlength="16" autocomplete="nickname" dir="auto" aria-label="Pseudo"></div>
+          <p id="acc-avatar-label" class="acc-label"></p>
+          <div id="acc-avatars" class="avatar-grid" role="radiogroup" aria-labelledby="acc-avatar-label"></div>
+          <label class="select-field"><span id="acc-gov-label"></span><select id="acc-gov"></select></label>
+          <button type="submit" id="acc-save" class="btn primary"></button>
+        </form>
+      </div>
+
+      <div class="acc-view" data-view="me" hidden>
+        <div class="acc-me">
+          <span id="acc-me-avatar" class="acc-me-avatar" aria-hidden="true"></span>
+          <div class="acc-me-text"><b id="acc-me-pseudo"></b><small id="acc-me-sub"></small></div>
+        </div>
+        <div class="level-box">
+          <div class="level-head"><b id="acc-level"></b><small id="acc-xp"></small></div>
+          <div class="xp-bar"><i id="acc-xp-bar"></i></div>
+          <small id="acc-next" class="level-next"></small>
+        </div>
+        <button type="button" id="acc-ranking" class="btn primary"></button>
+        <button type="button" id="acc-edit" class="btn ghost"></button>
+        <button type="button" id="acc-signout" class="btn ghost"></button>
+        <button type="button" id="acc-delete" class="link-btn danger"></button>
+      </div>
+
+      <p id="acc-error" class="acc-error" role="alert"></p>
     </div>
   </div>
 
@@ -304,6 +394,8 @@
   <script src="js/topics/_answers.js"></script>
   <!-- Source des questions : base de données + mémoire du téléphone (doit rester avant le moteur) -->
   <script src="js/data.js"></script>
+  <!-- Comptes joueurs : connexion, profil, XP, classements (logique sans affichage) -->
+  <script src="js/account.js"></script>
 
   <!-- Moteur -->
   <script src="js/sound.js"></script>
@@ -311,6 +403,7 @@
   <script src="js/core.js"></script>
   <script src="js/modes/duel.js"></script>
   <script src="js/modes/single.js"></script>
+  <script src="js/social.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
