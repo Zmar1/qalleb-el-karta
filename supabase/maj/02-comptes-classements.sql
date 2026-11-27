@@ -4,7 +4,8 @@
 --
 --  Réglages à faire aussi dans Supabase (voir README, section « 👤 Comptes & 🏆 classements ») :
 --    - Authentication → URL Configuration : Site URL + Redirect URLs (adresse du jeu) ;
---    - Authentication → Emails : modèles « Magic Link » et « Confirm signup » avec le code {{ .Token }} ;
+--    - e-mails : sans SMTP personnalisé, l'e-mail contient un LIEN (géré par le jeu) ; avec un SMTP personnalisé,
+--      modèles « Magic Link » et « Confirm signup » avec le CODE {{ .Token }} (supabase/email-code.html) ;
 --    - (Google) Authentication → Sign In / Providers → Google.
 --
 --  Principes :

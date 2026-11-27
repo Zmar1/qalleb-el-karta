@@ -79,6 +79,7 @@ const Social = (() => {
   let back = 'screen-home';
   let loadId = 0;
   let unsent = null; // partie solo finie sans compte : comptée si on se connecte dans la foulée
+  let verifying = false; // code en cours de vérification (la suite est gérée par le formulaire)
 
   const span = (cls, text) => {
     const s = document.createElement('span');
@@ -249,6 +250,7 @@ const Social = (() => {
       return;
     }
     busy(el.verify, true);
+    verifying = true;
     try {
       const st = await Account.verifyCode(pendingEmail, code);
       setPending('');
@@ -263,6 +265,7 @@ const Social = (() => {
     } catch (err) {
       showError(err);
     } finally {
+      verifying = false;
       busy(el.verify, false);
     }
   });
@@ -542,10 +545,15 @@ const Social = (() => {
     Account.onChange((st) => {
       renderHome();
       if (el.sheet.hidden) return;
-      const v = visibleView();
-      if (v && v.view === 'me') {
+      const v = (visibleView() || {}).view;
+      if (v === 'me') {
         if (st.profile) renderMe();
         else showView(currentView());
+      } else if ((v === 'signin' || v === 'code') && st.signedIn && !verifying) {
+        // Connecté en cliquant sur le lien de l'e-mail (souvent dans un autre onglet) : on passe à la suite
+        setPending('');
+        showView(currentView());
+        if (st.profile) afterSignIn();
       }
     });
     renderHome();
@@ -576,5 +584,8 @@ const Social = (() => {
 
   return { init, renderHome, openAccount, openRanking, afterGame, clearEnd, syncDaily };
 })();
+
+
+
 
 

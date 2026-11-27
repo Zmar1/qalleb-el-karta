@@ -209,9 +209,14 @@ const Account = (() => {
 
   /* ---------- Connexion ---------- */
   const cleanEmail = (email) => String(email || '').trim().toLowerCase();
+  const here = () => `${location.origin}${location.pathname}`;
 
+  // L'e-mail contient un code à 6 chiffres (modèle personnalisé, SMTP perso) et/ou un lien de connexion
+  // (modèle par défaut de Supabase) : le lien ramène ici avec #access_token=… (voir takeRedirect)
   async function sendCode(email) {
-    await request('/auth/v1/otp', { body: { email: cleanEmail(email), create_user: true } });
+    await request(`/auth/v1/otp?redirect_to=${encodeURIComponent(here())}`, {
+      body: { email: cleanEmail(email), create_user: true },
+    });
   }
 
   async function verifyCode(email, code) {
@@ -224,8 +229,7 @@ const Account = (() => {
   }
 
   function signInWithGoogle() {
-    const back = `${location.origin}${location.pathname}`;
-    location.assign(`${api.base}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(back)}`);
+    location.assign(`${api.base}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(here())}`);
   }
 
   // Retour de Google (ou d'un lien reçu par e-mail) : #access_token=…&refresh_token=… dans l'adresse

@@ -307,17 +307,30 @@ monte de niveau. Connexion **sans mot de passe** : un **code à 6 chiffres reçu
 2. **Authentication → URL Configuration** :
    - *Site URL* : `https://zmar1.github.io/qalleb-el-karta/`
    - *Redirect URLs* : ajoute `https://zmar1.github.io/qalleb-el-karta/**` et `http://localhost:3000/**`
-3. **Authentication → Emails → Templates** : dans **Magic Link** ET **Confirm signup**, remplace le contenu par celui
-   de `supabase/email-code.html` (le code `{{ .Token }}` doit y être), sujet : `🇹🇳 الكود متاعك لقلّب الكارطة`.
+3. **Tester tout de suite (sans rien d'autre)** : avec le service d'e-mails par défaut de Supabase, l'e-mail contient
+   un **lien** de connexion (le jeu le gère : il ramène au jeu, connecté). Limites de ce service : il n'écrit
+   **qu'aux adresses des membres de ton projet Supabase** (donc à toi), **2 à 3 e-mails par heure**, et ses modèles
+   d'e-mails ne sont pas modifiables (« Set up custom SMTP to edit the source »).
+4. **Avant d'ouvrir au public : ton propre service d'e-mails (SMTP)**. Le plus simple, gratuit, ~5 minutes :
+   **un Gmail dédié au jeu** (jusqu'à ~500 e-mails / jour) :
+   - crée une adresse Gmail pour le jeu (ex. `qalleb.karta…@gmail.com`) ;
+   - dans ce compte Google : **Sécurité → Validation en deux étapes** : active-la ;
+   - puis https://myaccount.google.com/apppasswords : crée un mot de passe d'application nommé « Supabase »
+     → copie les **16 caractères** ;
+   - Supabase → **Authentication → Emails → SMTP Settings** : active *Enable Custom SMTP* et remplis :
+     *Sender email* = l'adresse Gmail, *Sender name* = `قلّب الكارطة`, *Host* = `smtp.gmail.com`, *Port* = `587`,
+     *Username* = l'adresse Gmail, *Password* = les 16 caractères → **Save** ;
+   - Supabase → **Authentication → Rate Limits** : monte la limite d'e-mails par heure (ex. 60).
+
+   *Alternative* : **Brevo** (300 e-mails / jour) : compte sur https://www.brevo.com → **Senders** : ajoute et vérifie
+   l'adresse d'envoi → **SMTP & API → SMTP** : serveur `smtp-relay.brevo.com`, port `587`, identifiant + clé SMTP
+   à générer → mêmes champs dans Supabase. Plus tard, avec un nom de domaine à toi, les e-mails arriveront encore
+   mieux (moins de Spam).
+5. **Le code à 6 chiffres** (une fois le SMTP branché, les modèles deviennent modifiables) :
+   **Authentication → Emails → Templates** : dans **Magic Link** ET **Confirm signup**, bouton **Source** → remplace
+   tout par le contenu de `supabase/email-code.html`, sujet `🇹🇳 الكود متاعك لقلّب الكارطة` → **Save changes**.
    Garde la longueur du code à **6** (Authentication → Sign In / Providers → Email → *Email OTP Length*).
-4. **E-mails en vrai (indispensable avant d'ouvrir au public)** : le service d'e-mails de Supabase n'envoie que
-   **2 à 3 e-mails par heure** (parfait pour tester, pas pour des joueurs). Branche un service gratuit, ex. **Brevo**
-   (300 e-mails / jour) :
-   - crée un compte sur https://www.brevo.com, puis **Senders** : ajoute et vérifie l'adresse d'envoi ;
-   - **SMTP & API → SMTP** : note le serveur `smtp-relay.brevo.com`, le port `587`, l'identifiant, et génère une clé SMTP ;
-   - Supabase → **Authentication → Emails → SMTP Settings** : active *Custom SMTP*, renseigne l'adresse d'envoi,
-     le nom « قلّب الكارطة », le serveur, le port, l'identifiant et la clé SMTP → Save ;
-   - Supabase → **Authentication → Rate Limits** : monte la limite d'e-mails par heure (ex. 100).
+   Le code est indispensable pour le jeu **installé sur iPhone** (un lien s'ouvrirait dans Safari, pas dans le jeu).
 
 ### Google (facultatif)
 1. https://console.cloud.google.com → nouveau projet → **Google Auth Platform** (écran de consentement) : nom de l'appli,
