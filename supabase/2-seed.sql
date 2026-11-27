@@ -10,7 +10,7 @@ begin;
 insert into public.topics (id, name, emoji, description, color1, color2, type, image, featured, ribbon,
                            sort, next_pos, created_at)
 select x.id, x.name, x.emoji, x.description, x.color1, x.color2, x.type, x.image, x.featured, x.ribbon,
-       x.sort, x.next_pos, timestamptz '2026-11-01T00:00:00Z'
+       x.sort, x.next_pos, timestamptz '2025-01-01T00:00:00Z'
 from jsonb_to_recordset($seed$
 [
 {"id":"tunisie","name":"تونس","emoji":"🇹🇳","description":"تاريخ، بلايص، ماكلة و ثقافة تونسية","color1":"#EF233C","color2":"#B8000F","type":"quiz","image":"img/flag-tn.svg","featured":true,"ribbon":null,"sort":10,"next_pos":95},
@@ -38,7 +38,7 @@ select x.id, x.topic_id, x.pos, x.question,
        array(select e.v from jsonb_array_elements_text(coalesce(x.accepted, '[]'::jsonb)) with ordinality as e(v, n)
              order by e.n),
        coalesce(x.typable, true), 'published',
-       timestamptz '2026-11-01T00:00:00Z', timestamptz '2026-11-01T00:00:00Z', timestamptz '2026-11-01T00:00:00Z'
+       timestamptz '2025-01-01T00:00:00Z', timestamptz '2025-01-01T00:00:00Z', timestamptz '2025-01-01T00:00:00Z'
 from jsonb_to_recordset($seed$
 [
 {"id":"tunisie-0","topic_id":"tunisie","pos":0,"question":"وقتاش خذات تونس استقلالها؟","answers":["1952","1956","1962"],"correct":1,"fact":"تونس خذات إستقلالها نهار 20 مارس 1956.","img":null,"credit":null,"accepted":[],"typable":true},

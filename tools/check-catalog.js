@@ -18,7 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const assert = require('assert');
-const { build, topicFiles } = require('./export-seed');
+const { build, topicFiles, SEED_DATE } = require('./export-seed');
 
 const ROOT = path.resolve(__dirname, '..');
 const BASE = 'https://test-project.supabase.co';
@@ -29,6 +29,12 @@ const QUEUE_KEY = 'quizcards.reports';
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const strip = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined));
 const dayOf = (offset) => new Date(Date.UTC(2026, 10, 22 + offset)).toISOString().slice(0, 10); // défi n°1 = 2026-11-22
+// Date locale réelle (comme Core.dayKey) décalée de « offset » jours
+const realDay = (offset = 0) => {
+  const d = new Date();
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + offset);
+  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+};
 const tick = (ms = 30) => new Promise((r) => { setTimeout(r, ms); });
 
 // Même résultat que la fonction SQL game_catalog (mêmes filtres, même tri, mêmes champs)
@@ -48,7 +54,7 @@ function catalogOf(topicRows, questionRows, version) {
       f: q.fact || null, img: q.img || null, credit: q.credit || null,
       alt: q.accepted && q.accepted.length ? q.accepted : null,
       typable: q.typable === false ? false : null,
-      since: q.since || '2026-11-01',
+      since: q.since || SEED_DATE.slice(0, 10),
     }));
   return { version, topics, questions };
 }
@@ -151,8 +157,8 @@ async function main() {
   console.log(`✅ Défi du jour identique sur 150 jours, ≥ 6 thèmes par jour, aucune répétition sur un cycle de ${perCycle} jours`);
 
   /* ---------- 3. Mise à jour à chaud depuis la base ---------- */
-  const today = dayOf(5);
-  const yesterday = dayOf(4);
+  const today = realDay(0);
+  const yesterday = realDay(-1);
   const added = {
     id: 'tunisie-95', topic_id: 'tunisie', pos: 95, question: 'سؤال تجربة: شنوّة عاصمة تونس؟',
     answers: ['تونس', 'صفاقس', 'سوسة'], correct: 0, accepted: ['Tunis'], since: yesterday,
@@ -205,6 +211,20 @@ async function main() {
   assert.strictEqual(calls[calls.length - 1].body.known, 2);
   assert.strictEqual(await live.run('Data.refresh()'), false, 'pas de nouvelle vérification avant 10 minutes');
   console.log('✅ Mise à jour à chaud : nouvelle question jouable, thème trop petit caché, خلطة conservé, défi du jour stable');
+
+  /* ---------- 3 bis. Nouveautés ✨ : tirées en premier chez qui ne les a pas vues ---------- */
+  // Sur 40 parties de 10 cartes (parmi 96 questions jamais vues), la nouvelle question sort À CHAQUE FOIS
+  const draws = (topic, opts = '{}') => live.run(`(() => { const t = ${topic}; let n = 0;
+    for (let i = 0; i < 40; i++) if (Core.draw(t, 10, ${opts}).some((q) => q.id === 'tunisie-95')) n++; return n; })()`);
+  assert.strictEqual(live.run("Core.isNew(Core.questionById('tunisie-95'))"), true, 'publiée hier = nouveauté');
+  assert.strictEqual(live.run("Core.isNew(Core.questionById('tunisie-1'))"), false, 'question d\'origine ≠ nouveauté');
+  assert.strictEqual(live.run("L.category(Core.questionById('tunisie-95'), true)"), '🇹🇳 تونس · ✨ جديد');
+  assert.strictEqual(draws("TOPICS.find((t) => t.id === 'tunisie')"), 40, 'thème تونس : la nouveauté sort à chaque partie');
+  assert.strictEqual(draws('TOPICS.find((t) => t.mix)'), 40, 'خلطة : la nouveauté sort à chaque partie');
+  assert.strictEqual(draws("TOPICS.find((t) => t.id === 'tunisie')", '{ typed: true }'), 40, 'niveau صعيب aussi');
+  live.run("Core.markSeen(Core.questionById('tunisie-95'))");
+  assert.strictEqual(draws("TOPICS.find((t) => t.id === 'tunisie')"), 0, 'une fois vue, elle laisse la place aux questions jamais vues');
+  console.log('✅ Nouveautés ✨ : tirées dès la partie suivante (thème, خلطة, صعيب), puis rangées une fois vues');
 
   /* ---------- 4. Signalements : file d'attente sans Internet ---------- */
   online = false;

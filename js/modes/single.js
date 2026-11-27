@@ -210,7 +210,7 @@ const Single = (() => {
     el.modal.dataset.player = `p${state.current + 1}`;
     el.bigCard.classList.toggle('hot', card.special === 'hot');
     el.num.textContent = card.index + 1;
-    el.chip.textContent = `${q.emoji} ${q.topic}`;
+    el.chip.textContent = L.category(q, Core.isNew(q));
     el.question.textContent = q.question;
     el.special.textContent = '';
     el.special.className = 'special-banner';

@@ -130,9 +130,17 @@ async function main() {
   const removed = questionRows.filter((b) => !remote.has(b.id));
   console.log(`\n📝 Changements depuis l'admin : ${added.length} ajoutée(s), ${changed.length} modifiée(s), `
     + `${removed.length} retirée(s) du jeu (archivées ou brouillons)`);
-  added.slice(0, 8).forEach((q) => console.log(`     + ${q.id.padEnd(16)} ${short(q.q)}`));
-  changed.slice(0, 8).forEach((q) => console.log(`     ~ ${q.id.padEnd(16)} ${short(q.q)}`));
+  // Niveau صعيب : la question peut-elle être corrigée de façon fiable à l'écrit ?
+  const note = (q) => (q.a && !game.run(`Answer.typable(Core.questionById(${JSON.stringify(q.id)}))`)
+    ? '   (✍️ jamais posée au niveau صعيب)' : '');
+  added.slice(0, 8).forEach((q) => console.log(`     + ${q.id.padEnd(16)} ${short(q.q)}${note(q)}`));
+  changed.slice(0, 8).forEach((q) => console.log(`     ~ ${q.id.padEnd(16)} ${short(q.q)}${note(q)}`));
   removed.slice(0, 8).forEach((b) => console.log(`     - ${b.id.padEnd(16)} ${short(b.question)}`));
+  const fresh = catalog.questions.filter((q) => game.run(`Core.isNew(Core.questionById(${JSON.stringify(q.id)}) || {})`));
+  if (fresh.length) {
+    console.log(`✨ ${fresh.length} nouveauté(s) : elles sortent en premier chez chaque joueur qui ne les a pas encore vues `
+      + '(pendant 30 jours après leur publication), avec le badge « ✨ جديد » sur la carte.');
+  }
 
   /* ---------- 6. Défi du jour ---------- */
   const minus1 = shiftDay(localDay(new Date()), -1);
@@ -149,4 +157,5 @@ async function main() {
 main()
   .catch((e) => fail(e.message))
   .finally(() => { process.exitCode = failures ? 1 : 0; });
+
 

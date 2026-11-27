@@ -125,6 +125,9 @@ Photos libres de Wikimedia Commons, redimensionnées (~45 Ko), disponibles hors 
 - **Mémoire d'une ouverture à l'autre** : chaque carte retournée est notée sur le téléphone (par le texte de la
   question, donc insensible à l'ordre des listes). Le tirage prend **d'abord les questions jamais vues**, puis
   les plus anciennes. Exemple : 6 parties de « ثقافة عامّة » ou 14 parties « للمحبّين » de suite sans aucune répétition.
+- **Nouveautés ✨ en premier** : une question ajoutée dans l'admin (publiée depuis moins de 30 jours) passe devant
+  toutes les autres chez chaque joueur qui ne l'a pas encore vue → elle sort **dès la partie suivante** de son thème
+  (et en « خلطة »), avec le badge « ✨ جديد » sur la carte. Une fois vue, elle redevient une question comme les autres.
 - **Commun à tous les modes** : une question vue en solo, en groupe, en face à face, en « خلطة » ou au défi du jour
   ne revient pas tout de suite ailleurs.
 - **« خلطة »** : les cartes alternent les thèmes (8 thèmes différents sur 10 cartes).
@@ -203,6 +206,7 @@ js/app.js                → navigation : accueil → thème → mode → partie
 supabase/1-schema.sql    → tables, sécurité (RLS), fonctions du jeu — à exécuter une fois dans Supabase
 supabase/2-seed.sql      → les 738 questions d'origine (généré par tools/export-seed.js)
 supabase/3-admin.sql     → donne les droits d'administration à ton compte
+supabase/maj/*.sql       → mises à jour de la base (à exécuter une fois chacune, dans l'ordre)
 tools/export-seed.js     → régénère supabase/2-seed.sql depuis js/topics/*.js
 tools/check-catalog.js   → vérifie que la base donne exactement le même jeu que les fichiers
 tools/check-live.js      → diagnostic en direct de la base configurée (lecture seule)
@@ -255,6 +259,11 @@ publier.bat              → publication sur GitHub Pages (branche main) ; sur u
 - **Sécurité** : la clé publique ne permet que de lire les questions publiées et d'envoyer un signalement ; toute
   modification exige un compte présent dans la table `admins` (règles RLS de `1-schema.sql`).
 - **Sans configuration** (`js/config.js` vide), le jeu fonctionne exactement comme avant.
+
+### Mises à jour de la base
+Quand le jeu évolue, un petit script apparaît dans `supabase/maj/` (ex. `01-dates-questions-origine.sql`).
+Exécute chaque nouveau fichier **une fois**, dans l'ordre : **SQL Editor → New query → coller → Run**.
+Ils sont sans risque et ré-exécutables. Une base créée après coup avec les fichiers 1-2-3 à jour n'en a pas besoin.
 
 ### Outils
 ```cmd

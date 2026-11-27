@@ -21,6 +21,8 @@ const L = {
   plus: (p) => ltr(`+${p}`),
   fact: (f) => `💡 ${f}`,
   streak: (n) => `🔥 ${n} متتاليين!`,
+  // Thème de la carte (+ badge si la question vient d'être ajoutée)
+  category: (q, isNew) => `${q.emoji} ${q.topic}${isNew ? ' · ✨ جديد' : ''}`,
 
   /* ---------- Accueil ---------- */
   questionsBadge: (n, best) => `🎯 ${n} سؤال${best !== null ? ` · 🏅 ${best}` : ''}`,

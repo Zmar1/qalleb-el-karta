@@ -17,7 +17,7 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'supabase', '2-seed.sql');
-const SEED_DATE = '2026-11-01T00:00:00Z'; // date de publication des questions d'origine
+const SEED_DATE = '2025-01-01T00:00:00Z'; // date de publication des questions d'origine (ancienne : pas des nouveautés ✨)
 const TAG = '$seed$';                     // délimiteur SQL : aucune échappatoire à gérer
 
 // Mêmes fichiers, dans le même ordre que les balises <script> de index.html
@@ -174,7 +174,7 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { build, loadBundled, topicFiles };
+module.exports = { build, loadBundled, topicFiles, SEED_DATE };
 
 
 

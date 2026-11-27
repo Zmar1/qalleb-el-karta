@@ -196,12 +196,20 @@ const Core = (() => {
     store.set('seen', d);
   }
 
-  // Jamais vues d'abord, puis les plus anciennes ; ordre aléatoire à égalité
+  // Nouveautés ✨ : question publiée dans la base depuis moins de NEW_DAYS jours
+  const NEW_DAYS = 30;
+  const newSince = () => shiftKey(dayKey(), -NEW_DAYS);
+  const isNew = (q, since = newSince()) => !!q.since && q.since >= since;
+
+  // Jamais vues d'abord — avec les nouveautés ✨ en tête — puis les plus anciennes ; ordre aléatoire à égalité.
+  // Une question ajoutée dans l'admin sort donc dès la partie suivante chez chaque joueur qui ne l'a pas vue.
   function freshest(list) {
     const { m } = seenData();
+    const since = newSince();
+    const rank = (q) => m[seenKey(q)] || (isNew(q, since) ? -1 : 0);
     return shuffle(list)
-      .map((q) => ({ q, s: m[seenKey(q)] || 0 }))
-      .sort((a, b) => a.s - b.s)
+      .map((q) => ({ q, r: rank(q) }))
+      .sort((a, b) => a.r - b.r)
       .map((x) => x.q);
   }
 
@@ -565,6 +573,7 @@ const Core = (() => {
     $, $$, shuffle, pickRandom, vibrate, restartAnim, showScreen, fillMedal, toast, store,
     later, clearLater, keepAwake, releaseWake,
     draw, countQuestions, seenCount, markSeen, createCards, renderBoard, markCard, makeOption, createTimer,
+    isNew, questionById,
     LEVELS, isLevel, timeFor, choicesFor, fillFigure,
     randomLayout, layoutOf, pointsFor, praise, gridOf,
     dayKey, dayNumber, timeToMidnight, dailyDeck, deckFromIds, saveDaily, dailyStreak,

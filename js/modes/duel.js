@@ -222,7 +222,7 @@ const Duel = (() => {
     const shown = isOral() ? [] : Core.choicesFor(q, state.level);
 
     qz.num.textContent = card.index + 1;
-    qz.category.textContent = `${q.emoji} ${q.topic}`;
+    qz.category.textContent = L.category(q, Core.isNew(q));
     qz.hint.textContent = isOral() ? L.duel.hintOral : L.duel.hint;
     qz.qText.textContent = q.question;
     qz.choices.innerHTML = '';
