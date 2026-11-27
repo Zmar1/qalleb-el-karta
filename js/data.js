@@ -268,6 +268,7 @@ const Data = (() => {
     onChange,
     get source() { return current.source; },   // 'bundle' | 'cache' | 'remote'
     get version() { return current.version; },
+    get api() { return enabled ? { base, key } : null; }, // pour js/account.js
   };
 })();
 

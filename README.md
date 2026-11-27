@@ -194,6 +194,8 @@ img/flag-tn.svg          → médaillon du drapeau tunisien
 js/lang.js               → TOUS les textes de l'interface en derja (à modifier ici)
 js/config.js             → connexion à Supabase (URL + clé publique) ; vide = questions intégrées uniquement
 js/data.js               → source des questions : base de données + copie sur le téléphone + signalements
+js/account.js            → comptes joueurs : connexion (code e-mail / Google), profil, XP, envoi des parties, classements
+js/social.js             → écrans des comptes : « 👤 حسابي », « 🏆 الترتيب », XP et rang en fin de partie
 js/admin.js              → logique de la page admin
 js/topics/_registry.js   → registre des thèmes (format documenté)
 js/topics/*.js           → questions intégrées (1er lancement, hors ligne, ou sans base de données)
@@ -207,6 +209,7 @@ supabase/1-schema.sql    → tables, sécurité (RLS), fonctions du jeu — à e
 supabase/2-seed.sql      → les 738 questions d'origine (généré par tools/export-seed.js)
 supabase/3-admin.sql     → donne les droits d'administration à ton compte
 supabase/maj/*.sql       → mises à jour de la base (à exécuter une fois chacune, dans l'ordre)
+supabase/email-code.html → modèle d'e-mail avec le code de connexion (à coller dans Supabase)
 tools/export-seed.js     → régénère supabase/2-seed.sql depuis js/topics/*.js
 tools/check-catalog.js   → vérifie que la base donne exactement le même jeu que les fichiers
 tools/check-live.js      → diagnostic en direct de la base configurée (lecture seule)
@@ -243,6 +246,7 @@ publier.bat              → publication sur GitHub Pages (branche main) ; sur u
 | 📥 **Import en masse** | Coller des lignes `question \| bonne réponse \| mauvaise 1 \| mauvaise 2 \| anecdote \| variantes` ou un fichier CSV / copie d'Excel ou Google Sheets → vérification ligne par ligne → import. |
 | 📮 **Signalements** | Réponses écrites refusées et signalées par les joueurs → ✅ accepter (devient valable pour tous) ou ❌ refuser. |
 | 🎨 **Thèmes** | Créer un thème, nom, emoji, couleurs, ordre, ruban, mise en avant, activer / masquer. Un thème apparaît dans le jeu dès qu'il a **10 questions publiées**. |
+| 👥 **Joueurs** | Joueurs inscrits triés par XP : rechercher, renommer un pseudo, bannir / réactiver (les e-mails ne sont jamais affichés). |
 
 ### Comment le jeu s'en sert
 - **Démarrage instantané** : le jeu utilise la dernière copie des questions gardée sur le téléphone (ou, au tout premier
@@ -263,7 +267,12 @@ publier.bat              → publication sur GitHub Pages (branche main) ; sur u
 ### Mises à jour de la base
 Quand le jeu évolue, un petit script apparaît dans `supabase/maj/` (ex. `01-dates-questions-origine.sql`).
 Exécute chaque nouveau fichier **une fois**, dans l'ordre : **SQL Editor → New query → coller → Run**.
-Ils sont sans risque et ré-exécutables. Une base créée après coup avec les fichiers 1-2-3 à jour n'en a pas besoin.
+Ils sont sans risque et ré-exécutables. Sur une base toute neuve : 1-schema, 2-seed, 3-admin, puis tous les `maj/` dans l'ordre.
+
+| Fichier | Contenu |
+|---|---|
+| `maj/01-dates-questions-origine.sql` | Les questions d'origine ne sont pas des nouveautés ✨ |
+| `maj/02-comptes-classements.sql` | Comptes joueurs, profils, XP, classements (phase 2) |
 
 ### Outils
 ```cmd
@@ -272,6 +281,68 @@ node tools/check-live.js      :: diagnostic de TA base (lecture seule) : le jeu 
 node tools/export-seed.js     :: régénère supabase/2-seed.sql depuis js/topics/*.js
 node tools/check-catalog.js   :: vérifie : mêmes thèmes, mêmes défis du jour, mêmes identifiants, même correction
 ```
+
+## 👤 Comptes joueurs & 🏆 classements (phase 2)
+
+On peut toujours **jouer sans compte**. Avec un compte, le joueur entre dans les classements, gagne de l'XP et
+monte de niveau. Connexion **sans mot de passe** : un **code à 6 chiffres reçu par e-mail** (ou Google).
+
+| Fonction | Détail |
+|---|---|
+| 👤 **حسابي** | E-mail → code à 6 chiffres → pseudo (unique), avatar (16 emojis tunisiens) et **ولاية** (24 + 🌍 برّا تونس) |
+| ⭐ **XP & niveaux** | XP = points ⭐ des parties **solo** et du **défi du jour** : 🌱 مبتدئ → 📘 تلميذ → ✏️ شاطر → 🧠 فهّام → 🎓 خبير → 🏅 أستاذ → 🦅 بطل → 👑 أسطورة |
+| 🗓️ **Classement du jour** | Même défi pour tous ; à égalité, le plus de bonnes réponses puis le premier arrivé |
+| 📅 **Classement de la semaine** | Points depuis lundi (heure de Tunis) |
+| 🇹🇳 **Classement des ولايات** | Chaque joueur rapporte ses points de la semaine à sa ولاية |
+| 🏁 **Fin de partie** | « ⭐ +18 XP · 🧠 فهّام » ou « 🏆 ترتيبك اليوم: 12 من 340 » ; sans compte : « أدخل للترتيب » |
+| 🎁 **Joué avant de s'inscrire** | Le défi du jour (et la dernière partie solo) joués en invité comptent quand on s'inscrit juste après |
+| 📴 **Hors ligne** | Les parties attendent sur le téléphone et partent au retour d'Internet |
+| 🛡️ **Anti-triche** | Le serveur vérifie chaque partie (score possible, 1 seule participation au défi, 40 parties / 24 h) |
+| 🧹 **Modération** | Page admin → **👥 Joueurs** : renommer un pseudo, bannir (disparaît des classements) |
+| 🗑️ **فسّخ حسابي** | Le joueur peut supprimer son compte et toutes ses données (obligatoire sur les stores) |
+| 🔗 **Lien `#rank`** | `https://…/#rank` ouvre directement le classement du jour |
+
+### Mise en place dans Supabase (une seule fois)
+1. **SQL Editor** : exécute `supabase/maj/02-comptes-classements.sql`.
+2. **Authentication → URL Configuration** :
+   - *Site URL* : `https://zmar1.github.io/qalleb-el-karta/`
+   - *Redirect URLs* : ajoute `https://zmar1.github.io/qalleb-el-karta/**` et `http://localhost:3000/**`
+3. **Tester tout de suite (sans rien d'autre)** : avec le service d'e-mails par défaut de Supabase, l'e-mail contient
+   un **lien** de connexion (le jeu le gère : il ramène au jeu, connecté). Limites de ce service : il n'écrit
+   **qu'aux adresses des membres de ton projet Supabase** (donc à toi), **2 à 3 e-mails par heure**, et ses modèles
+   d'e-mails ne sont pas modifiables (« Set up custom SMTP to edit the source »).
+4. **Avant d'ouvrir au public : ton propre service d'e-mails (SMTP)**. Le plus simple, gratuit, ~5 minutes :
+   **un Gmail dédié au jeu** (jusqu'à ~500 e-mails / jour) :
+   - crée une adresse Gmail pour le jeu (ex. `qalleb.karta…@gmail.com`) ;
+   - dans ce compte Google : **Sécurité → Validation en deux étapes** : active-la ;
+   - puis https://myaccount.google.com/apppasswords : crée un mot de passe d'application nommé « Supabase »
+     → copie les **16 caractères** ;
+   - Supabase → **Authentication → Emails → SMTP Settings** : active *Enable Custom SMTP* et remplis :
+     *Sender email* = l'adresse Gmail, *Sender name* = `قلّب الكارطة`, *Host* = `smtp.gmail.com`, *Port* = `587`,
+     *Username* = l'adresse Gmail, *Password* = les 16 caractères → **Save** ;
+   - Supabase → **Authentication → Rate Limits** : monte la limite d'e-mails par heure (ex. 60).
+
+   *Alternative* : **Brevo** (300 e-mails / jour) : compte sur https://www.brevo.com → **Senders** : ajoute et vérifie
+   l'adresse d'envoi → **SMTP & API → SMTP** : serveur `smtp-relay.brevo.com`, port `587`, identifiant + clé SMTP
+   à générer → mêmes champs dans Supabase. Plus tard, avec un nom de domaine à toi, les e-mails arriveront encore
+   mieux (moins de Spam).
+5. **Le code à 6 chiffres** (une fois le SMTP branché, les modèles deviennent modifiables) :
+   **Authentication → Emails → Templates** : dans **Magic Link** ET **Confirm signup**, bouton **Source** → remplace
+   tout par le contenu de `supabase/email-code.html`, sujet `🇹🇳 الكود متاعك لقلّب الكارطة` → **Save changes**.
+   Garde la longueur du code à **6** (Authentication → Sign In / Providers → Email → *Email OTP Length*).
+   Le code est indispensable pour le jeu **installé sur iPhone** (un lien s'ouvrirait dans Safari, pas dans le jeu).
+
+### Google (facultatif)
+1. https://console.cloud.google.com → nouveau projet → **Google Auth Platform** (écran de consentement) : nom de l'appli,
+   e-mail de contact, public **Externe**, puis publie l'appli (*In production*).
+2. **Clients → Create client → Web application** :
+   - *Authorized JavaScript origins* : `https://zmar1.github.io` et `http://localhost:3000`
+   - *Authorized redirect URIs* : `https://wkzeeaukdiltpujrmjey.supabase.co/auth/v1/callback`
+   → copie le *Client ID* et le *Client secret*.
+3. Supabase → **Authentication → Sign In / Providers → Google** : active, colle l'ID et le secret → Save.
+4. Dans `js/config.js` : `googleLogin: true`, puis publie. Le bouton « كمّل بـ Google » apparaît.
+
+> Sur iPhone, dans le jeu **installé sur l'écran d'accueil**, Google s'ouvre dans Safari : le code par e-mail y est plus pratique.
 
 ## ✏️ Modifier les textes, ajouter des questions ou un thème
 

@@ -6,7 +6,7 @@
  *    (pré-téléchargées par js/data.js dans le cache IMG_CACHE).
  *  Les questions elles-mêmes sont mémorisées par js/data.js (localStorage), pas ici.
  */
-const CACHE = 'qalleb-v4';
+const CACHE = 'qalleb-v5';
 const IMG_CACHE = 'qalleb-img';
 const PLACES = ['bizerte', 'bulla-regia', 'carthage', 'chott-el-djerid', 'djerba', 'dougga', 'el-jem', 'ichkeul',
   'kairouan', 'kerkouane', 'matmata', 'monastir', 'sbeitla', 'sidi-bou-said', 'tabarka', 'tataouine', 'testour',
@@ -33,11 +33,13 @@ const ASSETS = [
   'js/topics/amoureux.js',
   'js/topics/_answers.js',
   'js/data.js',
+  'js/account.js',
   'js/sound.js',
   'js/answer.js',
   'js/core.js',
   'js/modes/duel.js',
   'js/modes/single.js',
+  'js/social.js',
   'js/app.js',
   ...PLACES.map((p) => `img/places/${p}.jpg`),
 ];

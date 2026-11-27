@@ -17,6 +17,8 @@
 const CONFIG = {
   supabaseUrl: 'https://wkzeeaukdiltpujrmjey.supabase.co',            // ex. 'https://abcdefghijklmnop.supabase.co'
   supabasePublishableKey: 'sb_publishable_mwQVE9zFXkECYU_1KTpQdA_grzzAjsD', // ex. 'sb_publishable_AbCdEf123…'
+  // Bouton « كمّل بـ Google » : mets true seulement APRÈS avoir activé Google dans Supabase (voir README)
+  googleLogin: false,
 };
 
 

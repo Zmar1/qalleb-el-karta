@@ -22,6 +22,7 @@
       <button type="button" data-tab="import">📥 Import en masse</button>
       <button type="button" data-tab="reports">📮 Signalements <span id="reports-badge" class="badge" hidden></span></button>
       <button type="button" data-tab="topics">🎨 Thèmes</button>
+      <button type="button" data-tab="players">👥 Joueurs</button>
     </nav>
     <div id="me" class="me" hidden>
       <span id="me-email"></span>
@@ -138,6 +139,22 @@
         <button type="button" id="t-new" class="btn primary">➕ Nouveau thème</button>
       </div>
       <div id="t-list" class="tiles"></div>
+    </section>
+
+    <!-- ================= Joueurs (modération) ================= -->
+    <section id="view-players" class="view" hidden>
+      <p class="muted">Joueurs inscrits (pseudo visible dans les classements). Un joueur <b>banni</b> disparaît des
+        classements et ses nouvelles parties ne comptent plus. Les e-mails ne sont jamais affichés ici.</p>
+      <div class="toolbar">
+        <input id="p-search" type="search" dir="auto" aria-label="Rechercher un joueur" placeholder="🔎 Rechercher un pseudo…">
+        <select id="p-filter" aria-label="Filtre">
+          <option value="">Tous les joueurs</option>
+          <option value="banned">🚫 Bannis</option>
+        </select>
+        <button type="button" id="p-reload" class="btn">🔄 Actualiser</button>
+      </div>
+      <p id="p-summary" class="summary"></p>
+      <div id="p-list" class="list"></div>
     </section>
   </main>
 

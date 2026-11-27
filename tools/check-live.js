@@ -117,6 +117,24 @@ async function main() {
   else if (/not.?found/i.test(photo.text)) ok('Dossier public « images » prêt pour les photos');
   else warn(`Dossier « images » : réponse inattendue (HTTP ${photo.status}) ${short(photo.text, 120)}`);
 
+  /* ---------- 4 bis. Comptes joueurs & classements (phase 2) ---------- */
+  const week = await call(`${base}/rest/v1/rpc/leaderboard_week`, { method: 'POST', headers: headers(key), body: '{}' });
+  if (week.status === 404) {
+    warn('Comptes joueurs pas encore installés : exécute supabase/maj/02-comptes-classements.sql');
+  } else if (week.ok && week.json && Array.isArray(week.json.top)) {
+    ok(`Classements en ligne : ${week.json.players} joueur(s) cette semaine${week.json.top[0] ? `, en tête : ${week.json.top[0].pseudo}` : ''}`);
+    if (JSON.stringify(week.json).includes('@')) fail('Un e-mail apparaît dans les classements !');
+    const write = await call(`${base}/rest/v1/rpc/submit_play`, {
+      method: 'POST', headers: headers(key),
+      body: JSON.stringify({ p_kind: 'solo', p_topic: 'x', p_day: localDay(new Date()), p_score: 2, p_correct: 1, p_total: 10, p_level: 'medium' }),
+    });
+    if (write.ok) fail('Une partie a pu être envoyée SANS compte ! Ré-exécute supabase/maj/02-comptes-classements.sql');
+    else ok('Envoi de parties et profils : réservés aux joueurs connectés');
+    await peek('Profils des joueurs, pour un visiteur anonyme', 'profiles?select=pseudo&limit=1');
+  } else {
+    warn(`Classements : réponse inattendue (HTTP ${week.status}) ${short(week.text, 120)}`);
+  }
+
   /* ---------- 5. Changements faits dans l'admin ---------- */
   const shape = (x) => JSON.stringify([x.q, x.a || null, x.a ? x.c : null, x.f || '', x.img || '', x.credit || '',
     x.alt && x.alt.length ? x.alt : [], x.typable !== false]);

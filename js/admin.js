@@ -16,7 +16,7 @@
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
   const conf = typeof CONFIG === 'object' && CONFIG ? CONFIG : {};
-  const TABS = ['questions', 'import', 'reports', 'topics'];
+  const TABS = ['questions', 'import', 'reports', 'topics', 'players'];
   const STATUS = { published: '🟢 Publiée', draft: '📝 Brouillon', archived: '📦 Archivée' };
   const LETTERS = ['أ', 'ب', 'ج'];
   const MIN_QUESTIONS = 10;  // en dessous, le jeu cache le thème (voir js/data.js)
@@ -33,6 +33,7 @@
   let editing = null;      // question en cours de modification (null = nouvelle)
   let editingTopic = null; // thème en cours de modification (null = nouveau)
   let importRows = [];
+  let players = null;      // chargés à la première ouverture de l'onglet 👥 Joueurs
 
   /* =====================================================================
      Outils
@@ -85,7 +86,7 @@
   function errorText(e) {
     const msg = (e && (e.message || e.error_description || e.msg)) || String(e);
     if (/row-level security|permission denied/i.test(msg)) return "Action refusée : ce compte n'a pas les droits admin.";
-    if (/duplicate key/i.test(msg)) return 'Cet identifiant existe déjà.';
+    if (/duplicate key/i.test(msg)) return /pseudo/i.test(msg) ? 'Ce pseudo est déjà pris.' : 'Cet identifiant existe déjà.';
     if (/questions_choices/i.test(msg)) return 'Il faut exactement 3 réponses et une bonne réponse.';
     if (/char_length|check constraint/i.test(msg)) return `Valeur refusée par la base : ${msg}`;
     if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) return 'Pas de connexion à la base (Internet ?).';
@@ -109,6 +110,7 @@
     $$('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
     show(name);
     history.replaceState(null, '', `#${name}`);
+    if (name === 'players' && !players) loadPlayers();
   }
 
   // Questions par thème : { all, published }
@@ -882,6 +884,83 @@
   }
 
   /* =====================================================================
+     👥 Joueurs (modération des pseudos — phase 2)
+     ===================================================================== */
+  async function loadPlayers() {
+    $('#p-summary').textContent = '⏳ Chargement…';
+    const { data, error } = await sb.from('profiles')
+      .select('id, pseudo, avatar, governorate, xp, banned, created_at')
+      .order('xp', { ascending: false })
+      .limit(1000);
+    if (error) {
+      players = [];
+      $('#p-summary').textContent = /profiles/.test(error.message || '')
+        ? '⚠️ Les comptes joueurs ne sont pas encore installés : exécute supabase/maj/02-comptes-classements.sql.'
+        : errorText(error);
+      $('#p-list').replaceChildren();
+      return;
+    }
+    players = data;
+    renderPlayers();
+  }
+
+  function renderPlayers() {
+    if (!players) return;
+    const terms = norm($('#p-search').value).split(' ').filter(Boolean);
+    const onlyBanned = $('#p-filter').value === 'banned';
+    const list = players.filter((p) => (!onlyBanned || p.banned) && terms.every((t) => norm(p.pseudo).includes(t)));
+    const banned = players.filter((p) => p.banned).length;
+    $('#p-summary').textContent = `${plural(players.length, 'joueur')} · ${plural(banned, 'banni')}`
+      + (list.length !== players.length ? ` · ${list.length} affiché(s)` : '');
+    $('#p-list').replaceChildren(...(list.length ? list.slice(0, MAX_ROWS).map(playerRow)
+      : [h('p', { class: 'empty' }, players.length ? 'Aucun joueur ne correspond.' : 'Aucun joueur inscrit pour le moment.')]));
+  }
+
+  function playerRow(p) {
+    return h('div', { class: `rrow${p.banned ? ' banned' : ''}` },
+      h('span', { class: 'p-avatar', 'aria-hidden': 'true' }, p.avatar),
+      h('div', { class: 'grow' },
+        h('div', { class: 'qrow-q', dir: 'auto' }, p.pseudo),
+        h('div', { class: 'qrow-head' },
+          h('span', { class: 'chip' }, `⭐ ${p.xp} XP`),
+          p.governorate ? h('span', { class: 'chip' }, `📍 ${p.governorate}`) : null,
+          p.banned ? h('span', { class: 'chip warn' }, '🚫 banni') : null,
+          h('span', { class: 'muted small' }, `inscrit le ${dateText(p.created_at)}`))),
+      h('div', { class: 'ractions' },
+        h('button', { type: 'button', class: 'btn ghost', onclick: () => renamePlayer(p) }, '✏️ Renommer'),
+        h('button', { type: 'button', class: p.banned ? 'btn ok' : 'btn ghost', onclick: () => banPlayer(p, !p.banned) },
+          p.banned ? '✅ Réactiver' : '🚫 Bannir')));
+  }
+
+  async function updatePlayer(p, patch, message) {
+    const { data, error } = await sb.from('profiles').update(patch).eq('id', p.id)
+      .select('id, pseudo, avatar, governorate, xp, banned, created_at').single();
+    if (error) {
+      toast(errorText(error), 'error');
+      return;
+    }
+    players = players.map((x) => (x.id === data.id ? data : x));
+    renderPlayers();
+    toast(message(data));
+  }
+
+  function renamePlayer(p) {
+    const name = prompt(`Nouveau pseudo pour « ${p.pseudo} » (2 à 16 caractères) :`, p.pseudo);
+    if (name === null) return;
+    const pseudo = clean(name);
+    if (pseudo.length < 2 || pseudo.length > 16) {
+      toast('Le pseudo doit faire entre 2 et 16 caractères.', 'error');
+      return;
+    }
+    if (pseudo !== p.pseudo) updatePlayer(p, { pseudo }, (d) => `✏️ Renommé en « ${d.pseudo} »`);
+  }
+
+  function banPlayer(p, banned) {
+    if (banned && !confirm(`Bannir « ${p.pseudo} » ? Il disparaîtra des classements.`)) return;
+    updatePlayer(p, { banned }, (d) => (d.banned ? `🚫 « ${d.pseudo} » banni` : `✅ « ${d.pseudo} » réactivé`));
+  }
+
+  /* =====================================================================
      Événements
      ===================================================================== */
   $$('#tabs button').forEach((b) => b.addEventListener('click', () => openTab(b.dataset.tab)));
@@ -919,6 +998,10 @@
   $('#t-new').addEventListener('click', () => openTopicEditor(null));
   $('#t-form').addEventListener('submit', saveTopic);
   $('#t-form').addEventListener('input', renderTopicPreview);
+
+  $('#p-search').addEventListener('input', debounce(renderPlayers, 150));
+  $('#p-filter').addEventListener('change', renderPlayers);
+  $('#p-reload').addEventListener('click', loadPlayers);
 
   $$('[data-close]').forEach((b) => b.addEventListener('click', () => b.closest('dialog').close()));
 

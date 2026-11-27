@@ -539,6 +539,7 @@ const Single = (() => {
     e.quote.innerHTML = '';
     e.panel.classList.toggle('theme-love', isLove());
     shareAction = null;
+    Social.clearEnd();
   }
 
   function showShare(label, action) {
@@ -574,6 +575,12 @@ const Single = (() => {
     return best;
   }
 
+  // Partie solo à compter pour l'XP et le classement (si le joueur a un compte)
+  const soloPlay = (p) => ({
+    kind: 'solo', topic: state.topic.id, day: Core.dayKey(), score: p.score, correct: p.correct,
+    total: state.cards.length, level: state.level,
+  });
+
   function endSolo() {
     const p = state.players[0];
     const total = state.cards.length;
@@ -584,6 +591,7 @@ const Single = (() => {
     addEndRow('p1', L.end.score, L.points(p.score));
     addEndRow(isRecord ? 'p1 winner' : 'p1', isRecord ? L.end.newRecord : L.end.best, L.points(Math.max(best, p.score)));
     showShare(L.challenge.shareBtn, () => shareChallenge());
+    Social.afterGame(soloPlay(p));
     if (isRecord || p.correct >= 8) Core.launchConfetti();
   }
 
@@ -601,6 +609,7 @@ const Single = (() => {
     addEndRow(diff < 0 ? 'p2 winner' : 'p2', from.name, L.points(from.score));
     showShare(L.challenge.replyBtn, () => shareChallenge(from));
     e.replay.textContent = L.end.newGame;
+    Social.afterGame(soloPlay(p));
     Sound.play(diff >= 0 ? 'win' : 'tie');
     if (diff > 0) Core.launchConfetti();
   }
@@ -653,6 +662,10 @@ const Single = (() => {
     const streak = Core.saveDaily(key, result);
     headline(p, result.total);
     renderDaily(result, num, streak);
+    Social.afterGame({
+      kind: 'daily', topic: null, day: key, score: result.score, correct: result.correct, total: result.total,
+      level: 'medium', grid: result.grid,
+    });
     if (p.correct >= 8) Core.launchConfetti();
   }
 
@@ -665,6 +678,7 @@ const Single = (() => {
     el.end.title.textContent = L.daily.doneTitle;
     el.end.sub.textContent = L.end.soloSub(result.name, result.correct, result.total);
     renderDaily(result, num, Core.dailyStreak());
+    Social.afterGame(null, 'daily'); // bouton « 🏆 شوف الترتيب »
     showQuote();
     Core.showScreen('screen-end');
   }

@@ -1841,6 +1841,147 @@ body {
 .daily-streak { background: rgba(242, 193, 78, 0.95); color: var(--ink); }
 @media (hover: hover) { .daily:hover .tile-go { transform: translateX(-4px); background: rgba(255, 255, 255, 0.36); } }
 
+/* ================= Comptes joueurs & classements (phase 2) ================= */
+/* Accueil : « 🏆 الترتيب · 👤 حسابي » */
+.social-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.social-btn {
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 1.02rem;
+  animation-delay: 0.05s;
+}
+.social-ico { flex: none; font-size: 1.45rem; line-height: 1; }
+.social-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.25; }
+.social-text > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.social-text small { font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+.social-text small:empty { display: none; }
+
+/* Fenêtre « حسابي » */
+.account-card { padding-top: 30px; }
+.sheet-close { position: absolute; top: 16px; inset-inline-end: 14px; z-index: 1; width: 34px; height: 34px; font-size: 0.9rem; }
+.acc-view { margin-top: 12px; }
+.acc-lead { text-align: center; color: var(--muted); font-size: 0.93rem; line-height: 1.65; margin-bottom: 12px; }
+.acc-form { display: flex; flex-direction: column; gap: 10px; }
+.acc-form .btn.primary { margin-top: 2px; }
+.field .code-input { text-align: center; letter-spacing: 0.45em; font-size: 1.5rem; font-weight: 800; }
+.acc-or { display: flex; align-items: center; gap: 10px; margin: 16px 0 8px; color: var(--muted); font-weight: 700; font-size: 0.85rem; }
+.acc-or::before, .acc-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.btn.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  color: #1F1F1F;
+  border: 2px solid var(--line);
+  box-shadow: 0 4px 0 var(--line);
+}
+.btn.google:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.btn.google .g {
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  font-size: 1.3rem;
+  background: conic-gradient(from -45deg, #EA4335 0 25%, #4285F4 0 50%, #34A853 0 75%, #FBBC05 0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.acc-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.link-btn {
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 6px 4px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-btn:disabled { color: var(--muted); text-decoration: none; cursor: default; }
+.link-btn.danger { display: block; margin: 14px auto 0; color: var(--ko); font-size: 0.85rem; }
+.acc-label { margin-top: 4px; font-size: 0.9rem; font-weight: 700; color: var(--muted); }
+.avatar-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.avatar-opt {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s, box-shadow 0.15s;
+}
+.avatar-opt[aria-checked="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(var(--blue-rgb), 0.2); transform: scale(1.08); }
+.acc-error { margin-top: 10px; text-align: center; color: var(--ko); font-weight: 700; font-size: 0.92rem; }
+.acc-error:empty { display: none; }
+.acc-me { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; background: #fff; border: 1px solid var(--line); }
+.acc-me-avatar {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 2.2rem;
+  line-height: 1;
+  background: var(--studs), var(--door);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--gold);
+}
+.acc-me-text { display: flex; flex-direction: column; min-width: 0; }
+.acc-me-text b { font-size: 1.3rem; color: var(--blue-dark); overflow-wrap: anywhere; }
+.acc-me-text small { font-size: 0.85rem; font-weight: 600; color: var(--muted); overflow-wrap: anywhere; }
+.level-box { margin: 12px 0 6px; padding: 12px 14px; border-radius: 18px; background: #FFF9E8; border: 1px solid #F5DFA0; }
+.level-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.level-head b { font-size: 1.15rem; }
+.level-head small { font-weight: 800; color: #9A6B00; }
+.xp-bar { height: 10px; margin: 8px 0 6px; border-radius: 999px; background: rgba(242, 193, 78, 0.3); overflow: hidden; }
+.xp-bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--gold), #E8721C); transition: width 0.6s var(--ease-out); }
+.level-next { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+
+/* Écran « 🏆 الترتيب » */
+#screen-ranking {
+  justify-content: center;
+  align-items: flex-start;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+}
+.ranking-panel h1 { font-size: 2rem; margin-bottom: 10px; }
+.ranking-tabs b { font-weight: 700; }
+.ranking-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; text-align: start; }
+.ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px solid var(--line);
+  animation: rise 0.35s var(--ease-back) backwards;
+}
+.ranking-row .rank { flex: none; width: 34px; text-align: center; font-weight: 800; font-size: 1.05rem; color: var(--muted); }
+.ranking-row.top1 .rank, .ranking-row.top2 .rank, .ranking-row.top3 .rank { font-size: 1.5rem; }
+.ranking-row .who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.ranking-row .av { flex: none; font-size: 1.45rem; line-height: 1; }
+.ranking-row .id { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.ranking-row .name { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranking-row .gov { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+.ranking-row .pts { flex: none; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
+.ranking-row .val { font-weight: 800; color: var(--blue); }
+.ranking-row .small { font-size: 0.72rem; font-weight: 600; color: var(--muted); }
+.ranking-row.top1 { border-color: var(--gold); background: #FFF9E8; }
+.ranking-row.me { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(var(--blue-rgb), 0.15); }
+.ranking-msg { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 10px; text-align: center; font-weight: 700; color: var(--muted); }
+.ranking-me { padding: 10px 12px; border-radius: 14px; background: var(--sky); color: var(--blue-dark); font-weight: 800; }
+
+/* Fin de partie : XP et rang */
+.end-rank { margin: -2px 0 8px; padding: 10px 12px; border-radius: 14px; background: #FFF9E8; border: 1px solid #F5DFA0; font-weight: 800; }
+.btn.social-cta { margin-top: 10px; }
+
 /* ================= Accessibilité ================= */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
