@@ -54,6 +54,7 @@ function catalogOf(topicRows, questionRows, version) {
 }
 
 // Bac à sable « navigateur » minimal + scripts du jeu dans l'ordre de index.html
+//   configured : true = base de test (url, key) · false = sans base · 'real' = js/config.js tel quel
 function sandbox({ configured, storage = {}, fetch = null, url = BASE, key = KEY }) {
   const store = new Map(Object.entries(storage));
   const logs = [];
@@ -74,12 +75,15 @@ function sandbox({ configured, storage = {}, fetch = null, url = BASE, key = KEY
   vm.createContext(context);
   ['js/lang.js', 'js/config.js', ...topicFiles(), 'js/data.js', 'js/answer.js', 'js/core.js'].forEach((file) => {
     let src = fs.readFileSync(path.join(ROOT, file), 'utf8');
-    if (file === 'js/config.js' && configured) {
-      ["supabaseUrl: ''", "supabasePublishableKey: ''"].forEach((field) => {
-        if (!src.includes(field)) throw new Error(`js/config.js : champ « ${field} » introuvable`);
-      });
-      src = src.replace("supabaseUrl: ''", `supabaseUrl: '${url}'`)
-        .replace("supabasePublishableKey: ''", `supabasePublishableKey: '${key}'`);
+    if (file === 'js/config.js' && configured !== 'real') {
+      // Valeurs imposées, quel que soit le contenu actuel de js/config.js
+      const set = (field, value) => {
+        const re = new RegExp(`(${field}:\\s*)'[^']*'`);
+        if (!re.test(src)) throw new Error(`js/config.js : champ « ${field} » introuvable`);
+        src = src.replace(re, (_, prefix) => `${prefix}'${value}'`);
+      };
+      set('supabaseUrl', configured ? url : '');
+      set('supabasePublishableKey', configured ? key : '');
     }
     vm.runInContext(src, context, { filename: file });
   });
@@ -268,7 +272,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { catalogOf };
+module.exports = { catalogOf, sandbox };
 
 
 

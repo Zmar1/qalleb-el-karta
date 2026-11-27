@@ -15,8 +15,8 @@
  *    droits sur la base à n'importe qui. Le jeu et la page admin refusent de s'en servir.
  */
 const CONFIG = {
-  supabaseUrl: '',            // ex. 'https://abcdefghijklmnop.supabase.co'
-  supabasePublishableKey: '', // ex. 'sb_publishable_AbCdEf123…'
+  supabaseUrl: 'https://wkzeeaukdiltpujrmjey.supabase.co',            // ex. 'https://abcdefghijklmnop.supabase.co'
+  supabasePublishableKey: 'sb_publishable_mwQVE9zFXkECYU_1KTpQdA_grzzAjsD', // ex. 'sb_publishable_AbCdEf123…'
 };
 
 

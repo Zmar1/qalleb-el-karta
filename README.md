@@ -205,6 +205,7 @@ supabase/2-seed.sql      → les 738 questions d'origine (généré par tools/ex
 supabase/3-admin.sql     → donne les droits d'administration à ton compte
 tools/export-seed.js     → régénère supabase/2-seed.sql depuis js/topics/*.js
 tools/check-catalog.js   → vérifie que la base donne exactement le même jeu que les fichiers
+tools/check-live.js      → diagnostic en direct de la base configurée (lecture seule)
 sw.js                    → service worker (jeu jouable hors ligne, toujours à jour en ligne)
 manifest.webmanifest     → installation « Ajouter à l'écran d'accueil »
 icon.svg                 → icône (porte de Sidi Bou Saïd + croissant et étoile)
@@ -257,6 +258,8 @@ publier.bat              → publication sur GitHub Pages (branche main) ; sur u
 
 ### Outils
 ```cmd
+node tools/check-live.js      :: diagnostic de TA base (lecture seule) : le jeu reçoit-il les questions ? sécurité OK ?
+                              :: + liste de ce qui a été ajouté / modifié / retiré depuis l'admin
 node tools/export-seed.js     :: régénère supabase/2-seed.sql depuis js/topics/*.js
 node tools/check-catalog.js   :: vérifie : mêmes thèmes, mêmes défis du jour, mêmes identifiants, même correction
 ```
