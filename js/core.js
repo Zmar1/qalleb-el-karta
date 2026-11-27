@@ -121,11 +121,19 @@ const Core = (() => {
 
   /* ---------- Questions ---------- */
 
-  // Identifiant stable « theme-position » (utilisé par les liens de défi et le défi du jour)
+  // Identifiant stable (liens de défi, défi du jour, réponses acceptées) : celui de la base de données,
+  // sinon « theme-position » pour les questions intégrées (ce sont les mêmes : voir tools/export-seed.js)
   function toQuestion(topic, raw, i) {
-    const base = { id: `${topic.id}-${i}`, topic: topic.name, emoji: topic.emoji, image: topic.image || null };
+    const obj = raw !== null && typeof raw === 'object';
+    const base = {
+      id: (obj && raw.id) || `${topic.id}-${i}`,
+      topic: topic.name,
+      emoji: topic.emoji,
+      image: topic.image || null,
+      since: (obj && raw.since) || null, // date de publication dans la base (défi du jour)
+    };
     return topic.type === 'love'
-      ? { ...base, question: raw }
+      ? { ...base, question: obj ? raw.q : raw }
       : {
         ...base,
         question: raw.q,
@@ -144,14 +152,16 @@ const Core = (() => {
     return topic.questions.map((raw, i) => toQuestion(topic, raw, i));
   }
 
+  // Index « identifiant → question », reconstruit quand le catalogue change (js/data.js)
+  let byId = null;
   function questionById(id) {
-    const cut = id.lastIndexOf('-');
-    if (cut <= 0) return null;
-    const topic = quizTopics().find((t) => t.id === id.slice(0, cut));
-    const i = Number(id.slice(cut + 1));
-    if (!topic || !Number.isInteger(i) || !topic.questions[i]) return null;
-    return toQuestion(topic, topic.questions[i], i);
+    if (!byId) {
+      byId = new Map();
+      quizTopics().forEach((t) => questionsOf(t).forEach((q) => byId.set(q.id, q)));
+    }
+    return byId.get(id) || null;
   }
+  if (typeof Data !== 'undefined') Data.onChange(() => { byId = null; });
 
   function shuffleAnswers(q, rng = Math.random) {
     const order = shuffle(q.answers.map((_, i) => i), rng);
@@ -294,19 +304,27 @@ const Core = (() => {
     return `${pad(Math.floor(min / 60))}:${pad(min % 60)}`;
   }
 
+  // Une question publiée dans la base n'entre dans le défi que 2 jours plus tard : ainsi, quel que soit
+  // le fuseau horaire, tout le monde a exactement le même paquet du début à la fin de la journée.
+  const inDaily = (q, key) => !q.since || q.since < shiftKey(key, -1);
+
   // Les mêmes 10 questions (et cartes spéciales) pour tout le monde le même jour.
   // Toutes les questions sont rangées dans une suite où chaque thème est réparti régulièrement
   // (au prorata de sa taille) ; chaque jour prend les 10 suivantes → aucune répétition d'un jour
   // à l'autre tant que la suite n'est pas épuisée, et chaque jour mélange les thèmes.
+  // Thèmes pris par ordre d'identifiant : réordonner les tuiles dans l'admin ne change pas le défi.
   function dailyDeck(key) {
     const day = dayNumber(key) - 1;
-    const topics = quizTopics();
-    const total = topics.reduce((sum, t) => sum + t.questions.length, 0);
+    const pools = quizTopics()
+      .map((t) => ({ id: t.id, list: questionsOf(t).filter((q) => inDaily(q, key)) }))
+      .filter((p) => p.list.length)
+      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const total = pools.reduce((sum, p) => sum + p.list.length, 0);
     const perCycle = Math.max(1, Math.floor(total / CARD_COUNT));
     const cycleRng = seededRandom(hashString(`qalleb:cycle:${Math.floor(day / perCycle)}`));
     const spread = [];
-    shuffle(topics, cycleRng).forEach((t) => {
-      const list = shuffle(questionsOf(t), cycleRng);
+    shuffle(pools, cycleRng).forEach((p) => {
+      const list = shuffle(p.list, cycleRng);
       const offset = cycleRng();
       list.forEach((q, i) => spread.push({ q, pos: (i + offset) / list.length }));
     });

@@ -1,9 +1,13 @@
 /**
  * Service worker : le jeu fonctionne hors ligne une fois ouvert.
  *  - fichiers du jeu : réseau d'abord (toujours la dernière version), cache si pas de connexion ;
- *  - polices Google : cache d'abord, mise à jour en arrière-plan.
+ *  - polices Google : cache d'abord, mise à jour en arrière-plan ;
+ *  - photos des questions hébergées dans la base (Supabase Storage) : cache d'abord
+ *    (pré-téléchargées par js/data.js dans le cache IMG_CACHE).
+ *  Les questions elles-mêmes sont mémorisées par js/data.js (localStorage), pas ici.
  */
-const CACHE = 'qalleb-v3';
+const CACHE = 'qalleb-v4';
+const IMG_CACHE = 'qalleb-img';
 const PLACES = ['bizerte', 'bulla-regia', 'carthage', 'chott-el-djerid', 'djerba', 'dougga', 'el-jem', 'ichkeul',
   'kairouan', 'kerkouane', 'matmata', 'monastir', 'sbeitla', 'sidi-bou-said', 'tabarka', 'tataouine', 'testour',
   'tozeur', 'tunis-avenue', 'zaghouan', 'zitouna'];
@@ -15,6 +19,7 @@ const ASSETS = [
   'img/flag-tn.svg',
   'manifest.webmanifest',
   'js/lang.js',
+  'js/config.js',
   'js/topics/_registry.js',
   'js/topics/tunisie.js',
   'js/topics/amthal.js',
@@ -27,6 +32,7 @@ const ASSETS = [
   'js/topics/din.js',
   'js/topics/amoureux.js',
   'js/topics/_answers.js',
+  'js/data.js',
   'js/sound.js',
   'js/answer.js',
   'js/core.js',
@@ -48,7 +54,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== IMG_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -86,6 +92,19 @@ self.addEventListener('fetch', (event) => {
           .catch(() => hit || Response.error());
         return hit || network;
       })),
+    );
+    return;
+  }
+
+  // Photos des questions ajoutées depuis la page admin (Supabase Storage)
+  if (request.destination === 'image' && url.pathname.includes('/storage/v1/object/public/')) {
+    event.respondWith(
+      caches.open(IMG_CACHE).then((cache) => cache.match(request.url).then((hit) => hit || fetch(request)
+        .then((response) => {
+          if (response.ok) cache.put(request.url, response.clone());
+          return response;
+        })))
+        .catch(() => Response.error()),
     );
   }
 });

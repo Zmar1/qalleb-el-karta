@@ -115,8 +115,14 @@ const L = {
     accept: '✅ نقبلوه',
     accepted: '⚖️ الجماعة قبلت الجواب!',
     report: '📮 جوابي صحيح؟ بلّغ الأدمين',
-    // Message envoyé à l'admin : il ajoute la variante dans js/topics/_answers.js
+    reported: '📮 وصل للأدمين، يعطيك الصحّة! 🙏',
+    // Sans base de données : message à partager, l'admin ajoute la variante dans la page admin
     reportText: (id, question, typed, good) => `📮 قلّب الكارطة · جواب مرفوض\n🆔 ${id}\n❓ ${question}\n✍️ ${typed}\n✅ ${good}`,
+  },
+
+  /* ---------- Base de données (js/data.js) ---------- */
+  data: {
+    fresh: (n) => `✨ أسئلة جديدة وصلت: ${ltr(`+${n}`)}`,
   },
 
   /* ---------- Arbitre (صعيب en face à face) ---------- */

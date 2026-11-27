@@ -488,9 +488,21 @@ const App = (() => {
   const linked = handleLink();
   if (!linked && !store.get('helpSeen', false)) openHelp();
 
-  // La tuile du jour se met à jour quand on revient dans l'appli (ex. après minuit)
+  /* ---------- Questions de la base de données (js/data.js) ---------- */
+  // Nouveau catalogue reçu : l'accueil se met à jour (les parties en cours gardent leurs cartes)
+  Data.onChange(({ added }) => {
+    if (!el.home.classList.contains('active')) return;
+    renderTopics();
+    renderDaily();
+    if (added > 0) Core.toast(L.data.fresh(added));
+  });
+  Data.refresh({ force: true });
+
+  // La tuile du jour se met à jour quand on revient dans l'appli (ex. après minuit) ; nouvelles questions ?
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && el.home.classList.contains('active')) renderDaily();
+    if (document.visibilityState !== 'visible') return;
+    if (el.home.classList.contains('active')) renderDaily();
+    Data.refresh();
   });
 
   return { home };

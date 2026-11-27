@@ -1,6 +1,10 @@
 /**
  * Registre des thèmes. Chaque fichier de js/topics/ ajoute son thème avec TOPICS.push({...}).
  *
+ * 🗄️ Avec la base de données (js/config.js rempli), ces fichiers ne servent qu'au tout premier lancement
+ *    et sans Internet : les thèmes et questions se gèrent dans admin.html, et js/data.js remplace TOPICS
+ *    par le catalogue de la base (même format, avec en plus un « id » et une date « since » par question).
+ *
  * Thème « quiz » (3 choix, modes Solo, Groupe et Face à face) :
  *   {
  *     id: 'mon-theme', name: 'إسم الموضوع', emoji: '🎯', description: 'وصف قصير',

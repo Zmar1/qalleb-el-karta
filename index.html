@@ -285,8 +285,10 @@
 
   <!-- Textes (derja tunisienne) -->
   <script src="js/lang.js"></script>
+  <!-- Connexion à la base de données Supabase (vide = questions intégrées uniquement) -->
+  <script src="js/config.js"></script>
 
-  <!-- Thèmes (ajoute ici tes nouveaux fichiers de thème) -->
+  <!-- Questions intégrées : utilisées au 1er lancement et sans Internet (la base de données les remplace ensuite) -->
   <script src="js/topics/_registry.js"></script>
   <script src="js/topics/tunisie.js"></script>
   <script src="js/topics/amthal.js"></script>
@@ -300,6 +302,8 @@
   <script src="js/topics/amoureux.js"></script>
   <!-- Réponses acceptées à l'écrit (niveau صعيب) -->
   <script src="js/topics/_answers.js"></script>
+  <!-- Source des questions : base de données + mémoire du téléphone (doit rester avant le moteur) -->
+  <script src="js/data.js"></script>
 
   <!-- Moteur -->
   <script src="js/sound.js"></script>

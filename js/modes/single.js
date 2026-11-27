@@ -363,11 +363,21 @@ const Single = (() => {
       el.accept.textContent = L.typed.accept;
       el.appeal.hidden = false;
     }
-    // 📮 Signaler à l'admin une réponse juste refusée (il l'ajoutera aux variantes acceptées)
+    // 📮 Signaler à l'admin une réponse juste refusée (il l'ajoutera aux variantes acceptées) :
+    // directement dans la base (page admin → Signalements), sinon par un message à partager
     if (!verdict.ok && text) {
       el.report.textContent = L.typed.report;
+      el.report.disabled = false;
       el.report.hidden = false;
-      el.report.onclick = () => Core.share(L.typed.reportText(q.id, q.question, text, q.answers[q.correct]));
+      el.report.onclick = () => {
+        if (Data.report(q.id, text)) {
+          el.report.disabled = true;
+          el.report.textContent = L.typed.reported;
+          Core.toast(L.typed.reported);
+          return;
+        }
+        Core.share(L.typed.reportText(q.id, q.question, text, q.answers[q.correct]));
+      };
     }
   }
 

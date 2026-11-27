@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0E5AA7">
+  <title>Admin · قلّب الكارطة</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" title="Ouvrir le jeu">
+      <img src="icon.svg" alt="" width="30" height="30"><b>قلّب الكارطة</b><span>admin</span>
+    </a>
+    <nav id="tabs" class="tabs" hidden>
+      <button type="button" data-tab="questions">📚 Questions</button>
+      <button type="button" data-tab="import">📥 Import en masse</button>
+      <button type="button" data-tab="reports">📮 Signalements <span id="reports-badge" class="badge" hidden></span></button>
+      <button type="button" data-tab="topics">🎨 Thèmes</button>
+    </nav>
+    <div id="me" class="me" hidden>
+      <span id="me-email"></span>
+      <button type="button" id="logout" class="btn small ghost">Déconnexion</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-loading" class="view"><p class="empty">⏳ Chargement…</p></section>
+
+    <!-- ================= Base non configurée ================= -->
+    <section id="view-setup" class="view" hidden>
+      <div class="card narrow">
+        <h1>🗄️ Base de données à configurer</h1>
+        <ol class="steps">
+          <li>Crée un projet gratuit sur <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com</a> (région Europe).</li>
+          <li><b>SQL Editor</b> : exécute <code>supabase/1-schema.sql</code>, puis <code>supabase/2-seed.sql</code>.</li>
+          <li><b>Authentication → Users → Add user</b> (ton e-mail + un mot de passe), puis exécute <code>supabase/3-admin.sql</code> avec ton e-mail.</li>
+          <li><b>Project Settings → API</b> : copie l'URL du projet et la clé publique (<i>anon</i> ou <i>publishable</i>) dans <code>js/config.js</code>.</li>
+          <li>Recharge cette page.</li>
+        </ol>
+        <p class="muted">Tous les détails : README, section « 🗄️ Base de données ».</p>
+        <p id="setup-error" class="error"></p>
+      </div>
+    </section>
+
+    <!-- ================= Connexion ================= -->
+    <section id="view-login" class="view" hidden>
+      <form id="login-form" class="card narrow">
+        <h1>🔐 Connexion admin</h1>
+        <label>E-mail<input id="login-email" type="email" autocomplete="username" required></label>
+        <label>Mot de passe<input id="login-password" type="password" autocomplete="current-password" required></label>
+        <button type="submit" id="login-btn" class="btn primary wide">Se connecter</button>
+        <p id="login-error" class="error"></p>
+      </form>
+    </section>
+
+    <!-- ================= Compte sans droits ================= -->
+    <section id="view-denied" class="view" hidden>
+      <div class="card narrow">
+        <h1>⛔ Ce compte n'est pas admin</h1>
+        <p>Dans Supabase → <b>SQL Editor</b>, exécute :</p>
+        <pre id="denied-sql" class="code"></pre>
+        <p class="muted">puis recharge cette page.</p>
+        <p id="denied-error" class="error"></p>
+      </div>
+    </section>
+
+    <!-- ================= Questions ================= -->
+    <section id="view-questions" class="view" hidden>
+      <div class="toolbar">
+        <select id="q-topic" aria-label="Thème"></select>
+        <select id="q-status" aria-label="Statut">
+          <option value="">Tous les statuts</option>
+          <option value="published">🟢 Publiées</option>
+          <option value="draft">📝 Brouillons</option>
+          <option value="archived">📦 Archivées</option>
+        </select>
+        <input id="q-search" type="search" dir="auto" aria-label="Rechercher" placeholder="🔎 Rechercher : question, réponse, identifiant…">
+        <button type="button" id="q-new" class="btn primary">➕ Nouvelle question</button>
+      </div>
+      <p id="q-summary" class="summary"></p>
+      <div id="q-list" class="list"></div>
+    </section>
+
+    <!-- ================= Import en masse ================= -->
+    <section id="view-import" class="view" hidden>
+      <div class="card">
+        <h2>📥 Ajouter plusieurs questions d'un coup</h2>
+        <p class="muted">Une question par ligne, colonnes séparées par <code>|</code>. Tu peux aussi copier-coller des lignes depuis Excel ou Google Sheets, ou choisir un fichier CSV :</p>
+        <pre class="code">question | bonne réponse | mauvaise réponse 1 | mauvaise réponse 2 | anecdote 💡 (optionnel) | réponses acceptées à l'écrit, séparées par ; (optionnel)</pre>
+        <p class="muted small">Thème « questions libres » 💕 : uniquement la question. Les doublons (même question, même bonne réponse) sont détectés et ignorés.</p>
+        <div class="row">
+          <label class="grow">Thème<select id="imp-topic"></select></label>
+          <label>Statut
+            <select id="imp-status">
+              <option value="published">🟢 Publier tout de suite</option>
+              <option value="draft">📝 Brouillon (à relire)</option>
+            </select>
+          </label>
+          <label class="file">📄 Fichier CSV / TSV<input id="imp-file" type="file" accept=".csv,.tsv,.txt,text/csv,text/plain"></label>
+        </div>
+        <textarea id="imp-text" rows="9" dir="auto" spellcheck="false" aria-label="Questions à importer"
+          placeholder="شكون أوّل رئيس للجمهورية التونسية؟ | الحبيب بورقيبة | الباجي قائد السبسي | فرحات حشّاد | بورقيبة ولّى رئيس في 1957 | Bourguiba; بورقيبة"></textarea>
+        <div class="actions">
+          <button type="button" id="imp-check" class="btn">🔍 Vérifier</button>
+          <button type="button" id="imp-go" class="btn primary" disabled>📥 Importer</button>
+        </div>
+        <p id="imp-summary" class="summary"></p>
+        <div id="imp-preview" class="list"></div>
+      </div>
+    </section>
+
+    <!-- ================= Signalements ================= -->
+    <section id="view-reports" class="view" hidden>
+      <p class="muted">Réponses écrites (niveau 🔴 صعيب) refusées par le jeu et signalées par les joueurs avec « 📮 بلّغ الأدمين ».
+        <b>✅ Accepter</b> ajoute la réponse aux variantes acceptées : elle devient valable pour tout le monde.</p>
+      <div class="toolbar">
+        <select id="r-status" aria-label="Signalements">
+          <option value="pending">⏳ À traiter</option>
+          <option value="accepted">✅ Acceptés</option>
+          <option value="rejected">❌ Refusés</option>
+        </select>
+        <button type="button" id="r-reload" class="btn">🔄 Actualiser</button>
+      </div>
+      <div id="r-list" class="list"></div>
+    </section>
+
+    <!-- ================= Thèmes ================= -->
+    <section id="view-topics" class="view" hidden>
+      <div class="toolbar">
+        <p class="muted grow">Un thème apparaît dans le jeu s'il est <b>actif</b> et a au moins <b>10 questions publiées</b>.</p>
+        <button type="button" id="t-new" class="btn primary">➕ Nouveau thème</button>
+      </div>
+      <div id="t-list" class="tiles"></div>
+    </section>
+  </main>
+
+  <!-- ================= Éditeur de question ================= -->
+  <dialog id="editor" class="dialog">
+    <form id="q-form" novalidate>
+      <header class="dialog-head">
+        <h2 id="f-title"></h2>
+        <button type="button" class="icon" data-close aria-label="Fermer">✕</button>
+      </header>
+      <div class="dialog-body">
+        <div class="row">
+          <label class="grow">Thème<select id="f-topic"></select></label>
+          <label>Statut
+            <select id="f-status">
+              <option value="published">🟢 Publiée</option>
+              <option value="draft">📝 Brouillon</option>
+              <option value="archived">📦 Archivée</option>
+            </select>
+          </label>
+        </div>
+        <label>Question<textarea id="f-question" rows="2" dir="auto" maxlength="300"></textarea></label>
+
+        <div class="quiz-only">
+          <fieldset class="choices">
+            <legend>Les 3 réponses — coche la bonne ✅ (l'ordre est mélangé dans le jeu)</legend>
+            <div class="choice"><input type="radio" name="f-correct" value="0" aria-label="Bonne réponse : 1"><input id="f-a0" dir="auto" maxlength="120" placeholder="Réponse 1" aria-label="Réponse 1"></div>
+            <div class="choice"><input type="radio" name="f-correct" value="1" aria-label="Bonne réponse : 2"><input id="f-a1" dir="auto" maxlength="120" placeholder="Réponse 2" aria-label="Réponse 2"></div>
+            <div class="choice"><input type="radio" name="f-correct" value="2" aria-label="Bonne réponse : 3"><input id="f-a2" dir="auto" maxlength="120" placeholder="Réponse 3" aria-label="Réponse 3"></div>
+          </fieldset>
+          <label>💡 Anecdote affichée après la réponse (optionnel)<textarea id="f-fact" rows="2" dir="auto" maxlength="400"></textarea></label>
+
+          <details id="f-photo-box">
+            <summary>📷 Photo (questions « 📍 وين هاذي ؟ »)</summary>
+            <label>Adresse de la photo<input id="f-img" dir="ltr" placeholder="https://…  ou  img/places/….jpg"></label>
+            <label class="file">⬆️ Envoyer une photo depuis l'ordinateur ou le téléphone (redimensionnée à 720 px)<input id="f-file" type="file" accept="image/*"></label>
+            <p id="f-photo-status" class="muted small"></p>
+            <label>Crédit : auteur · licence · source (obligatoire pour une photo qui n'est pas à toi)<input id="f-credit" dir="auto" maxlength="160"></label>
+          </details>
+
+          <details id="f-typed-box">
+            <summary>✍️ Niveau 🔴 صعيب (réponse écrite)</summary>
+            <label>Autres réponses acceptées, une par ligne (en français, forme courte…). Inutile d'écrire les variantes d'orthographe arabe ni les petites fautes : le jeu les tolère déjà.
+              <textarea id="f-accepted" rows="3" dir="auto"></textarea></label>
+            <label class="check"><input type="checkbox" id="f-never"> Ne jamais poser cette question à l'écrit (réponse trop longue ou descriptive)</label>
+          </details>
+        </div>
+
+        <p class="muted small">Aperçu de la carte</p>
+        <div id="f-preview" class="preview" dir="rtl"></div>
+        <p id="f-error" class="error"></p>
+      </div>
+      <footer class="dialog-foot">
+        <span id="f-id" class="muted"></span>
+        <button type="button" id="f-archive" class="btn ghost"></button>
+        <button type="button" class="btn ghost" data-close>Annuler</button>
+        <button type="submit" id="f-save" class="btn primary">💾 Enregistrer</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ================= Éditeur de thème ================= -->
+  <dialog id="topic-editor" class="dialog">
+    <form id="t-form" novalidate>
+      <header class="dialog-head">
+        <h2 id="t-title"></h2>
+        <button type="button" class="icon" data-close aria-label="Fermer">✕</button>
+      </header>
+      <div class="dialog-body">
+        <div class="row">
+          <label class="grow">Identifiant (définitif : minuscules, chiffres, tirets)<input id="t-id" dir="ltr" maxlength="30" placeholder="ex. cuisine"></label>
+          <label>Type
+            <select id="t-type">
+              <option value="quiz">🎯 Quiz (3 choix)</option>
+              <option value="love">💕 Questions libres</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label class="emoji">Emoji<input id="t-emoji" maxlength="8"></label>
+          <label class="grow">Nom affiché<input id="t-name" dir="auto" maxlength="40"></label>
+        </div>
+        <label>Description courte<input id="t-description" dir="auto" maxlength="80"></label>
+        <div class="row">
+          <label>Couleur 1<input id="t-color1" type="color"></label>
+          <label>Couleur 2<input id="t-color2" type="color"></label>
+          <label>Ordre<input id="t-sort" type="number" step="1"></label>
+          <label class="grow">Ruban (optionnel)<input id="t-ribbon" dir="auto" maxlength="20" placeholder="جديد ✨"></label>
+        </div>
+        <label>Image du médaillon (optionnel, remplace l'emoji)<input id="t-image" dir="ltr" placeholder="img/flag-tn.svg"></label>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="t-featured"> ⭐ Mis en avant (grande tuile en tête)</label>
+          <label class="check"><input type="checkbox" id="t-active"> 👀 Actif (visible dans le jeu)</label>
+        </div>
+        <p class="muted small">Aperçu de la tuile</p>
+        <div id="t-preview" class="tile-preview" dir="rtl"></div>
+        <p id="t-error" class="error"></p>
+      </div>
+      <footer class="dialog-foot">
+        <button type="button" class="btn ghost" data-close>Annuler</button>
+        <button type="submit" id="t-save" class="btn primary">💾 Enregistrer</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
+
+
+
+

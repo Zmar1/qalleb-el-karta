@@ -29,6 +29,15 @@ git remote add origin %REPO%
 set FIRST=1
 
 :push
+rem Seule la branche "main" est publiee sur le site. Sur une autre branche (ex. phase1-supabase),
+rem on sauvegarde seulement la branche sur GitHub : le site en ligne ne change pas.
+set "BRANCH="
+for /f "delims=" %%b in ('git symbolic-ref --short HEAD 2^>nul') do set "BRANCH=%%b"
+if not defined BRANCH goto detached
+if /i "%BRANCH%"=="master" goto publish
+if /i not "%BRANCH%"=="main" goto savebranch
+
+:publish
 git add -A
 git commit -m "Mise a jour du jeu" >nul 2>&1
 git branch -M main
@@ -63,6 +72,30 @@ if defined FIRST (
 echo ==========================================================
 pause
 exit /b 0
+
+:savebranch
+echo.
+echo ==========================================================
+echo  Tu es sur la branche "%BRANCH%" et pas sur "main".
+echo  Le site en ligne ne change PAS : seule "main" est publiee.
+echo  Sauvegarde de la branche sur GitHub...
+echo ==========================================================
+git add -A
+git commit -m "Travail en cours - %BRANCH%" >nul 2>&1
+git push -u origin "%BRANCH%"
+if errorlevel 1 goto pusherr
+echo.
+echo  OK ! Branche "%BRANCH%" sauvegardee sur GitHub. Le site n'a pas change.
+echo  Revenir a la version en ligne : git checkout main
+pause
+exit /b 0
+
+:detached
+echo.
+echo Aucune branche active : publication annulee.
+echo Reviens sur une branche, par exemple : git checkout main
+pause
+exit /b 1
 
 :nogit
 echo Git n'est pas installe : https://git-scm.com/download/win

@@ -79,13 +79,13 @@ aucune réponse d'une autre question acceptée à tort (hors équivalences voulu
 - **وحدي (solo)** : correction automatique uniquement (records et défis restent équitables).
 
 ### Validation par l'admin
-Après une réponse écrite refusée, le bouton « جوابي صحيح؟ بلّغ الأدمين » prépare un message (WhatsApp, Messenger…)
-avec l'identifiant de la question (ex. `tunisie-12`), la réponse tapée et la bonne réponse. L'admin ajoute la
-variante dans `js/topics/_answers.js` ; elle est acceptée pour tout le monde à la mise à jour suivante :
+Après une réponse écrite refusée, le bouton « جوابي صحيح؟ بلّغ الأدمين » envoie le signalement **directement dans
+la base de données** (sans Internet, il attend et part au prochain lancement). Dans la page admin, onglet
+**📮 Signalements**, les réponses sont regroupées (« 👥 3 joueurs ») : **✅ Accepter** ajoute la variante à la question,
+elle est acceptée pour tout le monde dès le lancement suivant du jeu.
 
-```js
-'tunisie-12': ['مجردة', 'Medjerda', 'Mejerda', 'Majerda'],   // ← ajoute la nouvelle variante ici
-```
+Sans base de données configurée, le bouton prépare comme avant un message (WhatsApp, Messenger…) avec l'identifiant
+de la question (ex. `tunisie-12`), la réponse tapée et la bonne réponse.
 
 ## 📍 Questions photo (thème تونس)
 
@@ -178,32 +178,92 @@ Pas de minuteur, pas de gagnant : un bilan des cœurs à la fin.
 
 ## 🧱 Technologies & structure
 
-HTML + CSS + JavaScript **sans framework ni serveur** : léger, rapide sur mobile, hébergeable gratuitement.
+HTML + CSS + JavaScript **sans framework ni étape de build** : léger, rapide sur mobile, hébergeable gratuitement.
+Les questions viennent d'une base de données **Supabase** (PostgreSQL) gérée depuis `admin.html` ; le jeu garde
+une copie sur le téléphone et embarque les questions d'origine → il démarre instantanément et marche hors ligne.
 
 ```
 index.html               → tous les écrans (lang="ar-TN", dir="rtl")
+admin.html               → page d'administration (questions, import en masse, signalements, thèmes)
 css/style.css            → design tunisien (portes, zellige, frises, animations 3D)
+css/admin.css            → style de la page admin
 img/flag-tn.svg          → médaillon du drapeau tunisien
 js/lang.js               → TOUS les textes de l'interface en derja (à modifier ici)
+js/config.js             → connexion à Supabase (URL + clé publique) ; vide = questions intégrées uniquement
+js/data.js               → source des questions : base de données + copie sur le téléphone + signalements
+js/admin.js              → logique de la page admin
 js/topics/_registry.js   → registre des thèmes (format documenté)
-js/topics/*.js           → un fichier par thème (questions en derja)
+js/topics/*.js           → questions intégrées (1er lancement, hors ligne, ou sans base de données)
 js/topics/amthal.js      → thème « كمّل المثل » + liste des proverbes (aussi utilisés en fin de partie)
 js/sound.js              → effets sonores (Web Audio API)
 js/core.js               → outils partagés (tirage, cartes spéciales, défi du jour, liens, partage…)
 js/modes/duel.js         → mode face à face (écran partagé)
 js/modes/single.js       → modes Solo, Groupe et Amoureux (écran normal) + défis
 js/app.js                → navigation : accueil → thème → mode → partie, liens #daily / #c=
+supabase/1-schema.sql    → tables, sécurité (RLS), fonctions du jeu — à exécuter une fois dans Supabase
+supabase/2-seed.sql      → les 738 questions d'origine (généré par tools/export-seed.js)
+supabase/3-admin.sql     → donne les droits d'administration à ton compte
+tools/export-seed.js     → régénère supabase/2-seed.sql depuis js/topics/*.js
+tools/check-catalog.js   → vérifie que la base donne exactement le même jeu que les fichiers
 sw.js                    → service worker (jeu jouable hors ligne, toujours à jour en ligne)
 manifest.webmanifest     → installation « Ajouter à l'écran d'accueil »
 icon.svg                 → icône (porte de Sidi Bou Saïd + croissant et étoile)
-publier.bat              → publication / mise à jour sur GitHub Pages en un double-clic
+publier.bat              → publication sur GitHub Pages (branche main) ; sur une autre branche : simple sauvegarde
+```
+
+## 🗄️ Base de données (Supabase) — ajouter des questions sans toucher au code
+
+### Mise en place (une seule fois, ~15 minutes, gratuit)
+1. Crée un compte et un projet sur https://supabase.com/dashboard (région **Europe**, ex. Frankfurt ou Paris).
+   Note bien le mot de passe de la base.
+2. **SQL Editor → New query** : colle tout `supabase/1-schema.sql` → **Run**.
+3. **SQL Editor → New query** : colle tout `supabase/2-seed.sql` → **Run** (importe les 738 questions actuelles avec
+   les **mêmes identifiants** : les liens « تحدّى صاحبك » déjà envoyés restent valables).
+4. **Authentication → Users → Add user → Create new user** : ton e-mail + un mot de passe solide, coche
+   **Auto Confirm User**. Puis dans **SQL Editor**, exécute `supabase/3-admin.sql` en y mettant ton e-mail.
+5. **Project Settings → API** (ou **API Keys**) : copie l'**URL du projet** et la clé publique (**anon** ou
+   **publishable**) dans `js/config.js`. ⛔ Jamais la clé `service_role` / `secret`.
+6. Ouvre `admin.html` (en local avec `npx serve .`, ou en ligne `https://…/admin.html`) et connecte-toi.
+
+### Au quotidien : la page admin
+| Onglet | Pour quoi faire |
+|---|---|
+| 📚 **Questions** | Chercher (tolère hamza, voyelles, accents), modifier, ajouter, archiver. Aperçu de la carte en direct, photo envoyée depuis le téléphone (redimensionnée à 720 px), réponses acceptées à l'écrit. Doublons détectés. |
+| 📥 **Import en masse** | Coller des lignes `question \| bonne réponse \| mauvaise 1 \| mauvaise 2 \| anecdote \| variantes` ou un fichier CSV / copie d'Excel ou Google Sheets → vérification ligne par ligne → import. |
+| 📮 **Signalements** | Réponses écrites refusées et signalées par les joueurs → ✅ accepter (devient valable pour tous) ou ❌ refuser. |
+| 🎨 **Thèmes** | Créer un thème, nom, emoji, couleurs, ordre, ruban, mise en avant, activer / masquer. Un thème apparaît dans le jeu dès qu'il a **10 questions publiées**. |
+
+### Comment le jeu s'en sert
+- **Démarrage instantané** : le jeu utilise la dernière copie des questions gardée sur le téléphone (ou, au tout premier
+  lancement, les questions intégrées), puis demande à la base si quelque chose a changé. Si oui, il télécharge les
+  questions, les garde et met l'accueil à jour (« ✨ أسئلة جديدة وصلت: +12 »). Si rien n'a changé, la réponse fait
+  quelques octets.
+- **Hors ligne** : tout continue de marcher avec la dernière copie ; les photos ajoutées depuis l'admin sont
+  téléchargées à l'avance.
+- **Identifiants stables** : chaque question garde son identifiant (`tunisie-12`, puis `tunisie-95`, `tunisie-96`… pour
+  les nouvelles). On **archive** une question au lieu de la supprimer.
+- **Défi du jour** : une question publiée n'y entre que **2 jours plus tard**, et les thèmes y sont pris par ordre
+  d'identifiant. Ajouter des questions ou réordonner les tuiles ne change donc jamais le défi en cours de journée :
+  tout le monde a les mêmes 10 questions.
+- **Sécurité** : la clé publique ne permet que de lire les questions publiées et d'envoyer un signalement ; toute
+  modification exige un compte présent dans la table `admins` (règles RLS de `1-schema.sql`).
+- **Sans configuration** (`js/config.js` vide), le jeu fonctionne exactement comme avant.
+
+### Outils
+```cmd
+node tools/export-seed.js     :: régénère supabase/2-seed.sql depuis js/topics/*.js
+node tools/check-catalog.js   :: vérifie : mêmes thèmes, mêmes défis du jour, mêmes identifiants, même correction
 ```
 
 ## ✏️ Modifier les textes, ajouter des questions ou un thème
 
 **Changer une formulation** de l'interface : tout est dans `js/lang.js`.
 
-**Ajouter une question** dans un thème quiz (`js/topics/tunisie.js` par ex.) :
+**Ajouter des questions ou un thème** : avec la base de données configurée, tout se fait dans **`admin.html`**
+(voir « 🗄️ Base de données » ci-dessus), sans toucher au code ni republier le site.
+
+Sans base de données, on peut toujours modifier les fichiers intégrés. **Ajouter une question** dans un thème quiz
+(`js/topics/tunisie.js` par ex.) :
 
 ```js
 { q: 'السؤال متاعك؟', a: ['جواب 1', 'جواب 2', 'جواب 3'], c: 0, f: 'معلومة صغيرة (اختياري)' },

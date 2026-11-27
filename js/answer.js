@@ -201,7 +201,14 @@ const Answer = (() => {
     return { ok, close: !ok && Number.isFinite(best) && best <= 2 };
   }
 
-  return { check, typable, hint, accepted, keyOf, distance };
+  // Le catalogue a changé (js/data.js) : les caches calculés sur les anciennes questions sont vidés
+  function reset() {
+    cache.clear();
+    known = null;
+  }
+  if (typeof Data !== 'undefined') Data.onChange(reset);
+
+  return { check, typable, hint, accepted, keyOf, distance, reset };
 })();
 
 
